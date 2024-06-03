@@ -1,15 +1,15 @@
 <?php
 
-namespace App\JsonApi\V1\Bookings;
+namespace App\JsonApi\V1\Tours;
 
-use App\Models\Booking;
+use App\Models\Tour;
 use Illuminate\Http\Request;
 use LaravelJsonApi\Core\Resources\JsonApiResource;
 
 /**
- * @property Booking $resource
+ * @property Tour $resource
  */
-class BookingResource extends JsonApiResource
+class TourResource extends JsonApiResource
 {
 
     /**
@@ -21,9 +21,6 @@ class BookingResource extends JsonApiResource
     public function attributes($request): iterable
     {
         return [
-            'referenceCode' => $this->resource->reference_code,
-            'contactName' => $this->resource->contact_name,
-            'contactEmail' => $this->resource->contact_email,
             'createdAt' => $this->resource->created_at,
             'updatedAt' => $this->resource->updated_at,
         ];
@@ -38,9 +35,7 @@ class BookingResource extends JsonApiResource
     public function relationships($request): iterable
     {
         return [
-            $this->relation('event'),
-            $this->relation('schedule'),
-            $this->relation('product', 'scheduleable'),
+            // @TODO
         ];
     }
 

@@ -25,16 +25,30 @@ class BookingTest extends TestCase
     protected $schedule;
     protected $event;
     protected $booking;
+
+    protected $tour2;
+    protected $schedule2;
+
+    protected $tour3;
     
     protected $correctAttributes;
     protected $correctRelationships;
+    protected $unrelatedResourcesRelationships;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->requiredFields = [
-            'event'
+            'attributes' => [
+                'contactName',
+                'contactEmail'
+            ],
+            'relationships' => [
+                'event',
+                'schedule',
+                'product'
+            ]
         ];
 
         $this->acceptedFields = [
@@ -63,6 +77,11 @@ class BookingTest extends TestCase
         $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
         $this->event = Event::factory()->for($this->schedule)->create();
         $this->booking = Booking::factory()->for($this->event)->make();
+
+        $this->tour2 = Tour::factory()->create();
+        $this->schedule2 = Schedule::factory()->for($this->tour2, 'scheduleable')->create();
+
+        $this->tour3 = Tour::factory()->create();
         
         $this->correctAttributes = [
             'contactName' => $this->booking->contact_name,
@@ -73,7 +92,40 @@ class BookingTest extends TestCase
             'event' => [
                 'data' => [
                     'type' => 'events',
-                    'id' => $this->booking->event->id
+                    'id' => $this->event->id
+                ]
+            ],
+            'schedule' => [
+                'data' => [
+                    'type' => 'schedules',
+                    'id' => $this->schedule->id
+                ]
+            ],
+            'product' => [
+                'data' => [
+                    'type' => 'tours',
+                    'id' => $this->tour->id
+                ]
+            ]
+        ];
+
+        $this->unrelatedResourcesRelationships = [
+            'event' => [
+                'data' => [
+                    'type' => 'events',
+                    'id' => $this->event->id
+                ]
+            ],
+            'schedule' => [
+                'data' => [
+                    'type' => 'schedules',
+                    'id' => $this->schedule2->id
+                ]
+            ],
+            'product' => [
+                'data' => [
+                    'type' => 'tours',
+                    'id' => $this->tour3->id
                 ]
             ]
         ];
@@ -81,17 +133,21 @@ class BookingTest extends TestCase
 
     public function test_anonymous_user_can_create_a_booking_for_an_event()
     {
+        $this->withoutExceptionHandling();
+
         $data = [
             'type' => 'bookings',
             'attributes' => $this->correctAttributes,
             'relationships' => $this->correctRelationships
         ];
 
+        // dd($data);
+
         $response = $this
             ->jsonApi()
             ->expects('bookings')
             ->withData($data)
-            ->includePaths('event')
+            ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
 
         $id = $response
@@ -143,7 +199,7 @@ class BookingTest extends TestCase
             ->jsonApi()
             ->expects('bookings')
             ->withData($data)
-            ->includePaths('event')
+            ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
 
         $id = $response
@@ -183,7 +239,7 @@ class BookingTest extends TestCase
             ->jsonApi()
             ->expects('bookings')
             ->withData($requestData)
-            ->includePaths('event')
+            ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
 
         $id = $response
@@ -211,19 +267,32 @@ class BookingTest extends TestCase
         }
     }
 
-    public function test_creating_a_booking_requires_relationships_data()
+    public function test_creating_a_booking_fails_if_any_required_field_is_omitted()
     {
         $data = [
             'type' => 'bookings',
-            'attributes' => $this->correctAttributes
+            'attributes' => [
+                $this->requiredFields['attributes'][0] => ''
+            ]
         ];
 
         $expectedErrors = [];
 
-        foreach ($this->requiredFields as $fieldName) {
+        foreach ($this->requiredFields['attributes'] as $fieldName) {
+            $snakeFieldName = Str::snake($fieldName, ' ');
             $expectedErrors[] = [
-                "detail" => "The {$fieldName} field is required.",
-                'source' => ['pointer' => '/data/relationships/event'],
+                "detail" => "The {$snakeFieldName} field is required.",
+                'source' => ['pointer' => "/data/attributes/{$fieldName}"],
+                'status' => '422',
+                "title" => "Unprocessable Entity"
+            ];
+        }
+
+        foreach ($this->requiredFields['relationships'] as $fieldName) {
+            $snakeFieldName = Str::snake($fieldName, ' ');
+            $expectedErrors[] = [
+                "detail" => "The {$snakeFieldName} field is required.",
+                'source' => ['pointer' => "/data/relationships/{$fieldName}"],
                 'status' => '422',
                 "title" => "Unprocessable Entity"
             ];
@@ -234,6 +303,8 @@ class BookingTest extends TestCase
             ->expects('bookings')
             ->withData($data)
             ->post(route('v1.bookings.store'));
+
+            // dd($response);
 
         $response->assertErrors(422, $expectedErrors);
     }
@@ -250,7 +321,7 @@ class BookingTest extends TestCase
             ->jsonApi()
             ->expects('bookings')
             ->withData($data)
-            ->includePaths('event')
+            ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
 
         $id = $response
@@ -266,8 +337,81 @@ class BookingTest extends TestCase
             'event_date' => $this->event->date,
             'event_time' => $this->event->time,
             'schedule_id' => $this->schedule->id,
+            'scheduleable_type' => get_class($this->tour),
             'scheduleable_id' => $this->tour->id,
             'scheduleable_description' => $this->tour->description
         ]);
+    }
+
+    public function test_creating_a_booking_fails_if_any_of_the_related_resources_does_not_exist()
+    {
+        $wrongRelationships = array_map(
+            function ($field) {
+                $modifiedArray = $field;
+                $modifiedArray['data']['id'] = 'inexistente';
+                return $modifiedArray;
+            },
+            $this->correctRelationships
+        );
+
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->correctAttributes,
+            'relationships' => $wrongRelationships
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.bookings.store'));
+
+        foreach ($this->requiredFields['relationships'] as $fieldName) {
+            $expectedErrors[] = [
+                "detail" => "The related resource does not exist.",
+                'source' => ['pointer' => "/data/relationships/{$fieldName}"],
+                'status' => '404',
+                "title" => "Not Found"
+            ];
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->post(route('v1.bookings.store'));
+
+        $response->assertErrors(404, $expectedErrors);
+    }
+
+    public function test_creating_a_booking_fails_if_any_of_the_resources_is_not_related_to_the_others()
+    {
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->unrelatedResourcesRelationships
+        ];
+
+        foreach ($this->requiredFields['relationships'] as $field) {
+            if ($field !== 'event')
+                $expectedErrors[] = [
+                    "detail" => "The resource is not properly related.",
+                    'source' => ['pointer' => "/data/relationships/{$field}"],
+                    'status' => '422',
+                    "title" => "Unprocessable Entity"
+                ];
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.bookings.store'));
+
+        // dd($response);
+
+        $response->assertErrors(422, $expectedErrors);
     }
 }

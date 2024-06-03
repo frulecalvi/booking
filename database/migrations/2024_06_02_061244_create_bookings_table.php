@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignUlid('event_id');
             $table->date('event_date');
             $table->time('event_time');
-            $table->ulid('schedule_id');
-            $table->ulid('scheduleable_id');
+            $table->foreignUlid('schedule_id');
+            $table->ulidMorphs('scheduleable');
             $table->string('scheduleable_description', 256);
             $table->string('reference_code', 10)->unique();
             $table->string('contact_name', 64);
