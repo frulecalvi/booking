@@ -16,47 +16,111 @@ class BookingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_anonymous_user_can_create_a_booking_for_an_event()
+    protected $requiredFields;
+    protected $acceptedFields;
+    protected $readOnlyFields;
+    protected $unsupportedFields;
+
+    protected $tour;
+    protected $schedule;
+    protected $event;
+    protected $booking;
+    
+    protected $correctAttributes;
+    protected $correctRelationships;
+
+    public function setUp(): void
     {
-        // $this->withExceptionHandling();
-        
-        $tour = Tour::factory()->create();
+        parent::setUp();
 
-        $schedule = Schedule::factory()
-            ->for($tour, 'scheduleable')
-            ->create();
-
-        $event = Event::factory()
-            ->for($schedule)
-            ->create();
-        
-        $booking = Booking::factory()
-            ->for($event)
-            ->make();
-
-        // dd($booking->reference_code);
-
-        $data = [
-            'type' => 'bookings',
-            'attributes' => [
-                'referenceCode' => $booking->reference_code,
-                // 'eventId' => $booking->event->id,
-                // 'scheduleableId' => $booking->scheduleable->id,
-                // 'contactName' => $booking->contact_name,
-                // 'contactEmail' => $booking->contact_email,
-                // 'status' => $booking->status
-            ],
-            // 'related' => [
-            //     'event' => [
-            //         'type' => 'events',
-            //         'links' => [
-            //             'self' => route('v1.events.show', $booking->event->id)
-            //         ]
-            //     ]
-            // ]
+        $this->requiredFields = [
+            'event'
         ];
 
-        // dd($data);
+        $this->acceptedFields = [
+            'contactName' => 'algo',
+            'contactEmail' => 'un@email.com'
+        ];
+
+        $this->readOnlyFields = [
+            'referenceCode' => 'algo',
+            'createdAt' => now(),
+            'updatedAt' => now(),
+            'deletedAt' => now()
+        ];
+
+        $this->unsupportedFields = [
+            'eventId' => 'algo',
+            'eventDate' => 'algo',
+            'eventTime' => 'algo',
+            'scheduleId' => 'algo',
+            'scheduleableId' => 'algo',
+            'scheduleableDescription' => 'algo',
+            'status' => 'algo'
+        ];
+
+        $this->tour = Tour::factory()->create();
+        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+        $this->event = Event::factory()->for($this->schedule)->create();
+        $this->booking = Booking::factory()->for($this->event)->make();
+        
+        $this->correctAttributes = [
+            'contactName' => $this->booking->contact_name,
+            'contactEmail' => $this->booking->contact_email
+        ];
+
+        $this->correctRelationships = [
+            'event' => [
+                'data' => [
+                    'type' => 'events',
+                    'id' => $this->booking->event->id
+                ]
+            ]
+        ];
+    }
+
+    public function test_anonymous_user_can_create_a_booking_for_an_event()
+    {
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->includePaths('event')
+            ->post(route('v1.bookings.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.bookings.index'),
+                $data
+            )
+            ->id();
+        
+        $this->assertDatabaseHas('bookings', ['id' => $id]);
+    }
+
+    public function test_creating_a_booking_rejects_filling_these_fields()
+    {
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->unsupportedFields
+        ];
+
+        $expectedErrors = [];
+
+        foreach ($this->unsupportedFields as $field => $value) {
+            $expectedErrors[] = [
+                "detail" => "The field {$field} is not a supported attribute.",
+                'source' => ['pointer' => '/data/attributes'],
+                'status' => '400',
+                "title" => "Non-Compliant JSON:API Document"
+            ];
+        }
 
         $response = $this
             ->jsonApi()
@@ -64,10 +128,142 @@ class BookingTest extends TestCase
             ->withData($data)
             ->post(route('v1.bookings.store'));
 
-        $response
+        $response->assertErrors(400, $expectedErrors);
+    }
+
+    public function test_creating_a_booking_accepts_filling_these_fields()
+    {
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->includePaths('event')
+            ->post(route('v1.bookings.store'));
+
+        $id = $response
             ->assertCreatedWithServerId(
                 route('v1.bookings.index'),
                 $data
-            );
+            )
+            ->id();
+        
+        $this->assertDatabaseHas('bookings', [
+            'id' => $id,
+            'contact_name' => $this->booking->contact_name,
+            'contact_email' => $this->booking->contact_email,
+            'event_id' => $this->booking->event->id,
+        ]);
+    }
+    
+    public function test_creating_a_booking_ignores_filling_these_fields()
+    {
+        // $this->withoutExceptionHandling();
+
+        $expectedData = [
+            'type' => 'bookings',
+            'attributes' => $this->acceptedFields,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $requestData = [
+            'type' => 'bookings',
+            'attributes' => $this->acceptedFields + $this->readOnlyFields,
+            'relationships' => $this->correctRelationships
+        ];
+
+        sleep(1);
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($requestData)
+            ->includePaths('event')
+            ->post(route('v1.bookings.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.bookings.index'),
+                $expectedData
+            )
+            ->id();
+        
+        $this->assertDatabaseHas('bookings', [
+            'id' => $id,
+            'contact_name' => $this->acceptedFields['contactName'],
+            'contact_email' => $this->acceptedFields['contactEmail']
+        ]);
+
+        $createdBooking = Booking::findOrFail($id);
+
+        $this->assertNotEquals($this->readOnlyFields['referenceCode'], $createdBooking->reference_code);
+        $this->assertNotEquals($this->readOnlyFields['createdAt'], $createdBooking->created_at);
+        $this->assertNotEquals($this->readOnlyFields['updatedAt'], $createdBooking->updated_at);
+        $this->assertNotEquals($this->readOnlyFields['deletedAt'], $createdBooking->deleted_at);
+    }
+
+    public function test_creating_a_booking_requires_relationships_data()
+    {
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->correctAttributes
+        ];
+
+        $expectedErrors = [];
+
+        foreach ($this->requiredFields as $fieldName) {
+            $expectedErrors[] = [
+                "detail" => "The {$fieldName} field is required.",
+                'source' => ['pointer' => '/data/relationships/event'],
+                'status' => '422',
+                "title" => "Unprocessable Entity"
+            ];
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->post(route('v1.bookings.store'));
+
+        $response->assertErrors(422, $expectedErrors);
+    }
+
+    public function test_creating_a_booking_correctly_saves_parent_relationships_data()
+    {
+        $data = [
+            'type' => 'bookings',
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects('bookings')
+            ->withData($data)
+            ->includePaths('event')
+            ->post(route('v1.bookings.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.bookings.index'),
+                $data
+            )
+            ->id();
+        
+        $this->assertDatabaseHas('bookings', [
+            'id' => $id,
+            'event_id' => $this->event->id,
+            'event_date' => $this->event->date,
+            'event_time' => $this->event->time,
+            'schedule_id' => $this->schedule->id,
+            'scheduleable_id' => $this->tour->id,
+            'scheduleable_description' => $this->tour->description
+        ]);
     }
 }

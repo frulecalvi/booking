@@ -12,9 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
-            $table->id();
-            $table->string('reference_code', 10);
+            $table->ulid('id')->primary();
+            $table->foreignUlid('event_id');
+            $table->date('event_date');
+            $table->time('event_time');
+            $table->ulid('schedule_id');
+            $table->ulid('scheduleable_id');
+            $table->string('scheduleable_description', 256);
+            $table->string('reference_code', 10)->unique();
+            $table->string('contact_name', 64);
+            $table->string('contact_email', 64);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

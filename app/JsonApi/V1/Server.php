@@ -2,6 +2,8 @@
 
 namespace App\JsonApi\V1;
 
+use App\Models\Event;
+use App\Models\Schedule;
 use LaravelJsonApi\Core\Server\Server as BaseServer;
 
 class Server extends BaseServer
@@ -32,7 +34,9 @@ class Server extends BaseServer
     protected function allSchemas(): array
     {
         return [
-            Bookings\BookingSchema::class
+            Bookings\BookingSchema::class,
+            Events\EventSchema::class,
+            Schedules\ScheduleSchema::class,
         ];
     }
 }

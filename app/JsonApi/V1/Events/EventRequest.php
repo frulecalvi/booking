@@ -1,12 +1,12 @@
 <?php
 
-namespace App\JsonApi\V1\Bookings;
+namespace App\JsonApi\V1\Events;
 
 use Illuminate\Validation\Rule;
 use LaravelJsonApi\Laravel\Http\Requests\ResourceRequest;
 use LaravelJsonApi\Validation\Rule as JsonApiRule;
 
-class BookingRequest extends ResourceRequest
+class EventRequest extends ResourceRequest
 {
 
     /**
@@ -17,9 +17,8 @@ class BookingRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'event' => ['required', JsonApiRule::toOne()],
-            'contactName' => 'required|string|max:64',
-            'contactEmail' => 'required|email|max:64'
+            // @TODO
         ];
     }
+
 }

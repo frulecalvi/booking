@@ -4,8 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Event;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
-// use Faker\Factory as FakerFactory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Booking>
@@ -20,7 +18,9 @@ class BookingFactory extends Factory
     public function definition(): array
     {
         return [
-            'reference_code' => Str::random(10)
+            // 'event_id' => Event::factory()->create(),
+            'contact_name' => $this->faker->name(),
+            'contact_email' => $this->faker->email()
         ];
     }
 }

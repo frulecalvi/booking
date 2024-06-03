@@ -1,20 +1,16 @@
 <?php
 
-namespace App\JsonApi\V1\Bookings;
+namespace App\JsonApi\V1\Events;
 
-use App\Models\Booking;
+use App\Models\Event;
 use LaravelJsonApi\Eloquent\Contracts\Paginator;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
-use LaravelJsonApi\Eloquent\Fields\Str;
 use LaravelJsonApi\Eloquent\Fields\ID;
-use LaravelJsonApi\Eloquent\Fields\Relations\BelongsTo;
-use LaravelJsonApi\Eloquent\Fields\Relations\HasOneThrough;
 use LaravelJsonApi\Eloquent\Filters\WhereIdIn;
 use LaravelJsonApi\Eloquent\Pagination\PagePagination;
 use LaravelJsonApi\Eloquent\Schema;
-use Znck\Eloquent\Relations\BelongsToThrough;
 
-class BookingSchema extends Schema
+class EventSchema extends Schema
 {
 
     /**
@@ -22,7 +18,7 @@ class BookingSchema extends Schema
      *
      * @var string
      */
-    public static string $model = Booking::class;
+    public static string $model = Event::class;
 
     /**
      * Get the resource fields.
@@ -33,13 +29,8 @@ class BookingSchema extends Schema
     {
         return [
             ID::make()->ulid(),
-            Str::make('referenceCode'),
-            Str::make('contactName'),
-            Str::make('contactEmail'),
             DateTime::make('createdAt')->sortable()->readOnly(),
             DateTime::make('updatedAt')->sortable()->readOnly(),
-            DateTime::make('deletedAt')->sortable()->readOnly(),
-            BelongsTo::make('event')
         ];
     }
 

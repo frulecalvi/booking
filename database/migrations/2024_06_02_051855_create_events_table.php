@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('schedule_id')->constrained();
+            $table->date('date');
+            $table->time('time');
             $table->timestamps();
         });
     }

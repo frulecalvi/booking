@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tours', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('description', 256);
             $table->timestamps();
         });
     }
