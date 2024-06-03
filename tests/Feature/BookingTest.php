@@ -192,19 +192,23 @@ class BookingTest extends TestCase
                 $expectedData
             )
             ->id();
-        
+
+        $databaseHas = [];
+
+        foreach ($this->acceptedFields as $field => $value) {
+            $databaseHas[Str::snake($field)] = $value;
+        }
+
         $this->assertDatabaseHas('bookings', [
             'id' => $id,
-            'contact_name' => $this->acceptedFields['contactName'],
-            'contact_email' => $this->acceptedFields['contactEmail']
+            ...$databaseHas
         ]);
 
         $createdBooking = Booking::findOrFail($id);
 
-        $this->assertNotEquals($this->readOnlyFields['referenceCode'], $createdBooking->reference_code);
-        $this->assertNotEquals($this->readOnlyFields['createdAt'], $createdBooking->created_at);
-        $this->assertNotEquals($this->readOnlyFields['updatedAt'], $createdBooking->updated_at);
-        $this->assertNotEquals($this->readOnlyFields['deletedAt'], $createdBooking->deleted_at);
+        foreach ($this->readOnlyFields as $field => $value) {
+            $this->assertNotEquals($value, $createdBooking->{Str::snake($field)});
+        }
     }
 
     public function test_creating_a_booking_requires_relationships_data()
