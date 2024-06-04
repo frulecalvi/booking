@@ -21,6 +21,11 @@ class TourResource extends JsonApiResource
     public function attributes($request): iterable
     {
         return [
+            // 'name' => $this->resource->name,
+            // 'description' => $this->resource->description,
+            // 'duration' => $this->resource->duration,
+            // 'meeting_point' => $this->resource->meeting_point,
+            // 'seating' => $this->resource->seating,
             'createdAt' => $this->resource->created_at,
             'updatedAt' => $this->resource->updated_at,
         ];

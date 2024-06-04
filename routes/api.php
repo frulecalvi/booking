@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\TourController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use LaravelJsonApi\Laravel\Facades\JsonApiRoute;
@@ -14,5 +15,5 @@ JsonApiRoute::server('v1')
     ->prefix('v1')
     ->resources(function (ResourceRegistrar $server) {
         $server->resource('bookings', BookingController::class);
-        // $server->resource('events', EventController::class);
+        $server->resource('tours', TourController::class);
     });

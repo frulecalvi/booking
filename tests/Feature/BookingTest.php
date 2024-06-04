@@ -133,7 +133,7 @@ class BookingTest extends TestCase
 
     public function test_anonymous_user_can_create_a_booking_for_an_event()
     {
-        $this->withoutExceptionHandling();
+        // $this->withoutExceptionHandling();
 
         $data = [
             'type' => 'bookings',

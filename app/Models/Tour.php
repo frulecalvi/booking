@@ -12,6 +12,10 @@ class Tour extends Model
 {
     use HasFactory, HasUlids, HasRelationships;
 
+    protected $fillable = [
+        'description',
+    ];
+
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
