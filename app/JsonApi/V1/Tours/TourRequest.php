@@ -17,7 +17,11 @@ class TourRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'description' => 'required'
+            'name' => 'required|string|max:128',
+            'description' => 'required|string|max:512',
+            'duration' => 'required|date_format:H:i:s',
+            'meeting_point' => 'required|string|max:128',
+            'seating' => 'required|integer',
         ];
     }
 

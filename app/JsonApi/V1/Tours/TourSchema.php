@@ -36,6 +36,7 @@ class TourSchema extends Schema
             Str::make('duration'),
             Str::make('meeting_point'),
             Number::make('seating'),
+            Str::make('state'),
             DateTime::make('createdAt')->sortable()->readOnly(),
             DateTime::make('updatedAt')->sortable()->readOnly(),
         ];
