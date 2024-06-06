@@ -3,6 +3,12 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Validation\UnauthorizedException;
+use LaravelJsonApi\Core\Exceptions\JsonApiException;
+use LaravelJsonApi\Core\Responses\ErrorResponse;
+use LaravelJsonApi\Exceptions\ExceptionParser;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,5 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->dontReport(JsonApiException::class);
+        $exceptions->renderable(ExceptionParser::make()->renderable());
     })->create();

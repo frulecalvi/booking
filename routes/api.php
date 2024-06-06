@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\ScheduleController;
 use App\Http\Controllers\Api\V1\TourController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -16,4 +17,5 @@ JsonApiRoute::server('v1')
     ->resources(function (ResourceRegistrar $server) {
         $server->resource('bookings', BookingController::class);
         $server->resource('tours', TourController::class);
+        $server->resource('schedules', ScheduleController::class)->readOnly();
     });

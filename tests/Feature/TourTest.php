@@ -9,12 +9,11 @@ use App\States\Tour\Inactive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use LaravelJsonApi\Testing\MakesJsonApiRequests;
 use Illuminate\Support\Str;
 
 class TourTest extends TestCase
 {
-    use MakesJsonApiRequests, RefreshDatabase;
+    use RefreshDatabase;
 
     protected $tours;
     protected $resourceType;
@@ -125,7 +124,7 @@ class TourTest extends TestCase
         $response->assertFetchedMany($createdTours);
     }
 
-    public function test_creating_tours_is_allowed_for_admin_and_super_admin_users()
+    public function test_creating_tours_is_allowed_for_admin_users()
     {
         // $this->withoutExceptionHandling();
 
@@ -133,16 +132,6 @@ class TourTest extends TestCase
             'type' => $this->resourceType,
             'attributes' => $this->correctAttributes
         ];
-
-        $superAdminResponse = $this
-            ->actingAs($this->superAdminUser)
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->withData($data)
-            ->includePaths(...$this->requiredFields)
-            ->post(route('v1.tours.store'));
-
-        $superAdminResponse->assertCreated();
 
         $adminResponse = $this
             ->actingAs($this->adminUser)
@@ -152,7 +141,10 @@ class TourTest extends TestCase
             ->includePaths(...$this->requiredFields)
             ->post(route('v1.tours.store'));
 
-        $adminResponse->assertCreated();
+        $adminResponse->assertCreatedWithServerId(
+            route('v1.tours.index'),
+            $data
+        );
     }
 
     public function test_creating_tours_is_forbidden_for_operator_users()
@@ -172,7 +164,26 @@ class TourTest extends TestCase
             ->includePaths(...$this->requiredFields)
             ->post(route('v1.tours.store'));
 
-        $operatorResponse->assertForbidden();
+        $operatorResponse->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_creating_a_tour_is_forbidden_for_unauthenticated_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes
+        ];
+
+        $operatorResponse = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...$this->requiredFields)
+            ->post(route('v1.tours.store'));
+
+        $operatorResponse->assertErrorStatus(['status' => '401']);
     }
 
     public function test_creating_a_tour_rejects_filling_these_fields()

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->ulidMorphs('scheduleable');
+            $table->string('state');
             $table->timestamps();
         });
     }

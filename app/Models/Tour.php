@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\States\Tour\Active;
-use App\States\Tour\TourState as TourTourState;
+use App\States\Tour\TourState;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +24,7 @@ class Tour extends Model
     ];
 
     protected $casts = [
-        'state' => TourTourState::class
+        'state' => TourState::class
     ];
 
     public function schedules(): HasMany
