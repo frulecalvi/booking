@@ -26,8 +26,8 @@ class ScheduleController extends Controller
     {
         if (! $request->user())
             abort(401);
-
-        if ($request->user() && $request->user()->hasRole('Admin')) {
+        
+        if ($request->user()->can('viewAny', Schedule::class)) {
             $schedules = Schedule::get();
         } else {
             $schedules = Schedule::active()->get();

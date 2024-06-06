@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('period');
+            $table->integer('day')->nullable();
+            // $table->date('date')->nullable();
+            $table->time('time');
+            $table->date('end_date')->nullable();
             $table->ulidMorphs('scheduleable');
             $table->string('state');
             $table->timestamps();

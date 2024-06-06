@@ -2,9 +2,11 @@
 
 namespace App\JsonApi\V1\Tours;
 
+use App\States\Tour\TourState;
 use Illuminate\Validation\Rule;
 use LaravelJsonApi\Laravel\Http\Requests\ResourceRequest;
 use LaravelJsonApi\Validation\Rule as JsonApiRule;
+use Spatie\ModelStates\Validation\ValidStateRule;
 
 class TourRequest extends ResourceRequest
 {
@@ -22,6 +24,7 @@ class TourRequest extends ResourceRequest
             'duration' => 'required|date_format:H:i:s',
             'meeting_point' => 'required|string|max:128',
             'seating' => 'required|integer',
+            'state' => ValidStateRule::make(TourState::class)
         ];
     }
 

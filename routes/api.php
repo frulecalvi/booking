@@ -17,5 +17,5 @@ JsonApiRoute::server('v1')
     ->resources(function (ResourceRegistrar $server) {
         $server->resource('bookings', BookingController::class);
         $server->resource('tours', TourController::class);
-        $server->resource('schedules', ScheduleController::class)->readOnly();
+        $server->resource('schedules', ScheduleController::class);
     });

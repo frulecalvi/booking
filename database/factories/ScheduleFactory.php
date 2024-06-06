@@ -17,7 +17,10 @@ class ScheduleFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'period' => $this->faker->randomElement(['daily', 'weekly', 'monthly']),
+            'day' => $this->faker->numberBetween(1, 7),
+            'time' => $this->faker->time(),
+            'end_date' => $this->faker->date(),
         ];
     }
 }

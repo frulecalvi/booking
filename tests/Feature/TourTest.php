@@ -206,7 +206,7 @@ class TourTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects('tours')
             ->withData($data)
             ->post(route('v1.tours.store'));
 

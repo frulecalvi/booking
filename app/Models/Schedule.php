@@ -18,6 +18,14 @@ class Schedule extends Model
 {
     use HasFactory, HasUlids, HasStates;
 
+    protected $fillable = [
+        'state',
+        'period',
+        'day',
+        'end_date',
+        'time',
+    ];
+
     protected $casts = [
         'state' => ScheduleState::class
     ];
