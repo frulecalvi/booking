@@ -22,7 +22,7 @@ class Schedule extends Model
         'state',
         'period',
         'day',
-        'end_date',
+        'date',
         'time',
     ];
 

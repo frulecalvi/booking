@@ -6,6 +6,8 @@ use App\Models\Schedule;
 use App\Models\Tour;
 use App\Models\User;
 use App\States\Schedule\Active;
+use DateInterval;
+use DateTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -17,6 +19,7 @@ class ScheduleTest extends TestCase
 
     protected $resourceType;
     protected $requiredFields;
+    protected $readOnlyFields;
     protected $unsupportedFields;
     protected $acceptedPeriodValues;
     protected $correctAttributes;
@@ -36,23 +39,29 @@ class ScheduleTest extends TestCase
             'attributes' => [
                 'period',
                 'day',
+                'date',
                 'time',
-                'endDate',
             ],
             'relationships' => ['product']
         ];
 
+        $this->readOnlyFields = [
+            'createdAt' => 'algo',
+            'updatedAt' => 'algo',
+            'deletedAt' => 'algo',
+        ];
+
         $this->unsupportedFields = [
-            'created_at' => 'algo',
-            'updated_at' => 'algo',
-            'deleted_at' => 'algo',
+            'scheduleableType' => 'algo',
+            'scheduleableId' => 'algo',
+            'status' => 'algo'
         ];
 
         $this->acceptedPeriodValues = [
             'once',
-            'daily',
+            // 'daily',
             'weekly',
-            'monthly',
+            // 'monthly',
         ];
 
         $this->tour = Tour::factory()->create();
@@ -80,10 +89,10 @@ class ScheduleTest extends TestCase
         $this->correctAttributes = [
             'period' => $this->schedules[Active::$name][0]->period,
             'day' => $this->schedules[Active::$name][0]->day,
+            'date' => $this->schedules[Active::$name][0]->date,
             // 'date' => $this->schedules[Active::$name][0]->date,
             'time' => $this->schedules[Active::$name][0]->time,
             // 'start_date' => $this->schedules[Active::$name][0]->start_date,
-            'endDate' => $this->schedules[Active::$name][0]->end_date,
             'state' => Active::$name,
         ];
 
@@ -110,7 +119,7 @@ class ScheduleTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->get(route('v1.schedules.index'));
 
             // var_dump($response);
@@ -130,7 +139,7 @@ class ScheduleTest extends TestCase
         $response = $this
             ->actingAs($this->operatorUser)
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->get(route('v1.schedules.index'));
 
             // var_dump($response);
@@ -154,19 +163,115 @@ class ScheduleTest extends TestCase
         $response = $this
             ->actingAs($this->adminUser)
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->get(route('v1.schedules.index'));
 
-        // var_dump($createdSchedules);
+        // dd($response->getContent());
         
         $response->assertFetchedMany($createdSchedules);
+    }
+
+    public function test_creating_a_schedule_is_forbidden_for_unauthenticated_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        // dd($data);
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_creating_a_schedule_is_forbidden_for_operator_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        // dd($data);
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_creating_a_schedule_ignores_filling_these_fields()
+    {
+        $expectedData = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $requestData = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes + $this->readOnlyFields,
+            'relationships' => $this->correctRelationships
+        ];
+
+        sleep(1);
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($requestData)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.schedules.index'),
+                $expectedData
+            )
+            ->id();
+
+
+        $databaseHas = [];
+
+        foreach ($this->correctAttributes as $field => $value) {
+            $databaseHas[Str::snake($field)] = $value;
+        }
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $id,
+            ...$databaseHas
+        ]);
+
+        $createdSchedule = Schedule::findOrFail($id);
+
+        foreach ($this->readOnlyFields as $field => $value) {
+            $this->assertNotEquals($value, $createdSchedule->{Str::snake($field)});
+        }
     }
 
     public function test_creating_a_schedule_rejects_filling_these_fields()
     {
         $data = [
-            'type' => 'schedules',
-            'attributes' => $this->unsupportedFields
+            'type' => $this->resourceType,
+            'attributes' => $this->unsupportedFields,
+            'relationships' => $this->correctRelationships
         ];
 
         $expectedErrors = [];
@@ -181,10 +286,13 @@ class ScheduleTest extends TestCase
         }
 
         $response = $this
+            ->actingAs($this->adminUser)
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->withData($data)
             ->post(route('v1.schedules.store'));
+
+        // dd($response->getContent());
 
         $response->assertErrors(400, $expectedErrors);
     }
@@ -194,7 +302,7 @@ class ScheduleTest extends TestCase
         // $this->withoutExceptionHandling();
 
         $data = [
-            'type' => 'schedules',
+            'type' => $this->resourceType,
             'attributes' => $this->correctAttributes,
             'relationships' => $this->correctRelationships
         ];
@@ -204,7 +312,7 @@ class ScheduleTest extends TestCase
         $response = $this
             ->actingAs($this->adminUser)
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->withData($data)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.schedules.store'));
@@ -220,7 +328,7 @@ class ScheduleTest extends TestCase
             $databaseHas[Str::snake($field)] = $value;
         }
         
-        $this->assertDatabaseHas('schedules', [
+        $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
             ...$databaseHas
         ]);
@@ -232,7 +340,7 @@ class ScheduleTest extends TestCase
             $this->correctAttributes['period'] = $value;
 
             $data = [
-                'type' => 'schedules',
+                'type' => $this->resourceType,
                 'attributes' => $this->correctAttributes,
                 'relationships' => $this->correctRelationships
             ];
@@ -242,7 +350,7 @@ class ScheduleTest extends TestCase
             $response = $this
                 ->actingAs($this->adminUser)
                 ->jsonApi()
-                ->expects('schedules')
+                ->expects($this->resourceType)
                 ->withData($data)
                 ->includePaths(...array_keys($this->correctRelationships))
                 ->post(route('v1.schedules.store'));
@@ -259,14 +367,14 @@ class ScheduleTest extends TestCase
     public function test_creating_a_schedule_fails_if_any_of_the_required_fields_is_omitted()
     {
         $data = [
-            'type' => 'schedules',
+            'type' => $this->resourceType,
             'attributes' => [
                 $this->requiredFields['attributes'][0] => ''
             ]
         ];
 
         $dataOnce = [
-            'type' => 'schedules',
+            'type' => $this->resourceType,
             'attributes' => [
                 $this->requiredFields['attributes'][0] => '',
                 'period' => 'once'
@@ -281,15 +389,20 @@ class ScheduleTest extends TestCase
 
             $detail = $fieldName === 'day' ?
                 "The {$snakeFieldName} field is required unless period is in once."
-                : "The {$snakeFieldName} field is required."
+                : (
+                    $fieldName === 'date' ?
+                    "The {$snakeFieldName} field is required when period is once."
+                    : "The {$snakeFieldName} field is required."
+                )
             ;
 
-            $expectedErrors[] = [
-                "detail" => $detail,
-                'source' => ['pointer' => "/data/attributes/{$fieldName}"],
-                'status' => '422',
-                "title" => "Unprocessable Entity"
-            ];
+            if (! in_array($fieldName, ['date']))
+                $expectedErrors[] = [
+                    "detail" => $detail,
+                    'source' => ['pointer' => "/data/attributes/{$fieldName}"],
+                    'status' => '422',
+                    "title" => "Unprocessable Entity"
+                ];
 
             if (! in_array($fieldName, ['day', 'period']))
                 $expectedErrorsOnce[] = [
@@ -316,14 +429,14 @@ class ScheduleTest extends TestCase
         $response = $this
             ->actingAs($this->adminUser)
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->withData($data)
             ->post(route('v1.schedules.store'));
 
         $responseOnce = $this
             ->actingAs($this->adminUser)
             ->jsonApi()
-            ->expects('schedules')
+            ->expects($this->resourceType)
             ->withData($dataOnce)
             ->post(route('v1.schedules.store'));
 
@@ -331,8 +444,117 @@ class ScheduleTest extends TestCase
         $responseOnce->assertErrors(422, $expectedErrorsOnce);
     }
 
-    public function test_creating_a_schedule_creates_all_of_its_associated_events()
-    {
+    // public function test_creating_a_schedule_is_possible_only_if_the_scheduleables_s_end_date_is_in_the_future()
+    // {
+    //     $data = [
+    //         'type' => $this->resourceType,
+    //         'attributes' => $this->correctAttributes,
+    //         'relationships' => $this->correctRelationships
+    //     ];
 
+    //     $expectedError = [
+    //         "detail" => "The resource's end date is not valid.",
+    //         'source' => ['pointer' => "/data/relationships/product"],
+    //         'status' => '422',
+    //         "title" => "Unprocessable Entity"
+    //     ];
+
+    //     $response = $this
+    //         ->actingAs($this->adminUser)
+    //         ->jsonApi()
+    //         ->expects($this->resourceType)
+    //         ->withData($data)
+    //         ->includePaths(...array_keys($this->correctRelationships))
+    //         ->post(route('v1.schedules.store'));
+
+    //     // dd($response);
+
+    //     $response->assertError(422, $expectedError);
+    // }
+
+    public function test_creating_a_once_schedule_creates_its_associated_event()
+    {
+        $this->withoutExceptionHandling();
+
+        $today = new DateTime();
+
+        $futureDate = $today->add(DateInterval::createFromDateString('365 days'))->format('Y-m-d');
+
+        $this->correctAttributes['period'] = 'once';
+        $this->correctAttributes['date'] = $futureDate;
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.schedules.index'),
+                $data
+            )->id();
+        
+        $this->assertDatabaseHas('events', [
+            'schedule_id' => $id,
+            'date' => $this->correctAttributes['date'],
+            'time' => $this->correctAttributes['time'],
+        ]);
+    }
+
+    public function test_creating_a_weekly_schedule_creates_all_its_associated_events()
+    {
+        $this->withoutExceptionHandling();
+        
+        $today = new DateTime();
+
+        $futureDate = $today->add(DateInterval::createFromDateString('365 days'))->format('Y-m-d');
+
+        $this->correctAttributes['period'] = 'weekly';
+        // $this->correctAttributes['day'] = 5;
+        // $this->correctAttributes['time'] = '12:00:00';
+        $this->tour->end_date = $futureDate;
+        $this->tour->save();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.schedules.index'),
+                $data
+            )->id();
+
+        // var_dump($this->tour->date);
+        // dd(getAllWeekdayDatesUntil($this->correctAttributes['day'], $this->tour->end_date));
+        
+        $expectedEventsDates = getAllWeekdayDatesUntil($this->correctAttributes['day'], $this->tour->end_date);
+
+        foreach ($expectedEventsDates as $date) {
+            $this->assertDatabaseHas('events', [
+                'schedule_id' => $id,
+                'date' => $date,
+                'time' => $this->correctAttributes['time'],
+            ]);
+        }
     }
 }

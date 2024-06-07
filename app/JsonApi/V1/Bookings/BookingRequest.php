@@ -31,8 +31,7 @@ class BookingRequest extends ResourceRequest
         if ($this->isCreatingOrUpdating()) {
             $validator->after(
                 function ($validator) {
-                    if (!$validator->failed()) {
-
+                    if (! $validator->failed()) {
                         $requestEventId = $validator->safe()->event['id'];
                         $requestScheduleId = $validator->safe()->schedule['id'];
                         $requestProductId = $validator->safe()->product['id'];

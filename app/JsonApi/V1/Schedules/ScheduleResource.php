@@ -24,11 +24,12 @@ class ScheduleResource extends JsonApiResource
             'day' => $this->resource->day,
             // 'date' => $this->resource->date,
             'time' => $this->resource->time,
-            'endDate' => $this->resource->end_date,
+            'date' => $this->resource->date,
             'period' => $this->resource->period,
             'state' => $this->resource->state,
             'createdAt' => $this->resource->created_at,
             'updatedAt' => $this->resource->updated_at,
+            'updatedAt' => $this->resource->deleted_at
         ];
     }
 

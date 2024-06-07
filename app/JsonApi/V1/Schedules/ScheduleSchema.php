@@ -35,12 +35,13 @@ class ScheduleSchema extends Schema
             ID::make()->ulid(),
             Str::make('period'),
             Number::make('day'),
+            Str::make('date'),
             // Str::make('date'),
             Str::make('time'),
-            Str::make('endDate'),
             Str::make('state'),
             DateTime::make('createdAt')->sortable()->readOnly(),
             DateTime::make('updatedAt')->sortable()->readOnly(),
+            DateTime::make('deletedAt')->sortable()->readOnly(),
             MorphTo::make('product', 'scheduleable')->types('tours', 'shows')
         ];
     }

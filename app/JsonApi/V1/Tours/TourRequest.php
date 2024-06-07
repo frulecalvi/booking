@@ -22,8 +22,9 @@ class TourRequest extends ResourceRequest
             'name' => 'required|string|max:128',
             'description' => 'required|string|max:512',
             'duration' => 'required|date_format:H:i:s',
-            'meeting_point' => 'required|string|max:128',
+            'meetingPoint' => 'required|string|max:128',
             'seating' => 'required|integer',
+            'endDate' => 'required|date_format:Y-m-d',
             'state' => ValidStateRule::make(TourState::class)
         ];
     }

@@ -36,4 +36,9 @@ class ScheduleController extends Controller
         return new DataResponse($schedules);
     }
 
+    // public function store(Request $request)
+    // {
+    //     if (! $request->user())
+    //         abort(401);
+    // }
 }

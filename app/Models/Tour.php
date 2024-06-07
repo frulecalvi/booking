@@ -21,6 +21,7 @@ class Tour extends Model
         'duration',
         'meeting_point',
         'seating',
+        'end_date'
     ];
 
     protected $casts = [

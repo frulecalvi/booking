@@ -22,10 +22,26 @@ class ScheduleRequest extends ResourceRequest
             'product' => ['required', JsonApiRule::toOne()],
             'period' => ['required', 'string', Rule::in(['once', 'daily', 'weekly', 'monthly'])],
             'day' => 'required_unless:period,once|integer|min:1|max:7',
+            'date' => 'required_if:period,once|date_format:Y-m-d',
             'time' => 'required|date_format:H:i:s',
-            'endDate' => 'required|date_format:Y-m-d',
             'state' => ValidStateRule::make(ScheduleState::class)
         ];
     }
 
+    // public function withValidator($validator)
+    // {
+    //     if ($this->isCreatingOrUpdating()) {
+    //         $validator->after(
+    //             function ($validator) {
+    //                 if (! $validator->failed()) {
+
+    //                     dd($validator->safe());
+    //                     $requestProductId = $validator->safe()->scheduleable['id'];
+
+
+    //                 }
+    //             }
+    //         );
+    //     }
+    // }
 }

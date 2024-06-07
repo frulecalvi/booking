@@ -16,11 +16,11 @@ class SchedulePolicy
 
     public function viewAny(User $user)
     {
-        return $user->hasRole('Admin') ?? false;
+        return $user->hasRole('Admin') ?: false;
     }
 
     public function create(User $user)
     {
-        return true;
+        return $user->hasRole('Admin') ?: false;
     } 
 }

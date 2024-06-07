@@ -12,6 +12,11 @@ class Event extends Model
 {
     use HasFactory, HasUlids;
 
+    protected $fillable = [
+        'date',
+        'time',
+    ];
+
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class);

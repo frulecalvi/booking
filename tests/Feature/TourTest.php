@@ -54,8 +54,9 @@ class TourTest extends TestCase
             'name' => $this->tours[Active::$name][0]->name,
             'description' => $this->tours[Active::$name][0]->description,
             'duration' => $this->tours[Active::$name][0]->duration,
-            'meeting_point' => $this->tours[Active::$name][0]->meeting_point,
+            'meetingPoint' => $this->tours[Active::$name][0]->meeting_point,
             'seating' => $this->tours[Active::$name][0]->seating,
+            'endDate' => $this->tours[Active::$name][0]->end_date,
             'state' => Inactive::$name
         ];
 
@@ -215,7 +216,7 @@ class TourTest extends TestCase
 
     public function test_creating_a_tour_accepts_filling_these_fields()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $data = [
             'type' => 'tours',

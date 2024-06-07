@@ -16,8 +16,8 @@ class BookingTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected $resourceType;
     protected $requiredFields;
-    protected $acceptedFields;
     protected $readOnlyFields;
     protected $unsupportedFields;
 
@@ -39,6 +39,8 @@ class BookingTest extends TestCase
     {
         parent::setUp();
 
+        $this->resourceType = 'bookings';
+
         $this->requiredFields = [
             'attributes' => [
                 'contactName',
@@ -49,11 +51,6 @@ class BookingTest extends TestCase
                 'schedule',
                 'product'
             ]
-        ];
-
-        $this->acceptedFields = [
-            'contactName' => 'algo',
-            'contactEmail' => 'un@email.com'
         ];
 
         $this->readOnlyFields = [
@@ -68,6 +65,7 @@ class BookingTest extends TestCase
             'eventDate' => 'algo',
             'eventTime' => 'algo',
             'scheduleId' => 'algo',
+            'scheduleableType' => 'algo',
             'scheduleableId' => 'algo',
             'scheduleableDescription' => 'algo',
             'status' => 'algo'
@@ -136,7 +134,7 @@ class BookingTest extends TestCase
         // $this->withoutExceptionHandling();
 
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => $this->correctAttributes,
             'relationships' => $this->correctRelationships
         ];
@@ -145,7 +143,7 @@ class BookingTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
@@ -157,13 +155,13 @@ class BookingTest extends TestCase
             )
             ->id();
         
-        $this->assertDatabaseHas('bookings', ['id' => $id]);
+        $this->assertDatabaseHas($this->resourceType, ['id' => $id]);
     }
 
     public function test_creating_a_booking_rejects_filling_these_fields()
     {
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => $this->unsupportedFields
         ];
 
@@ -180,7 +178,7 @@ class BookingTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->post(route('v1.bookings.store'));
 
@@ -190,14 +188,14 @@ class BookingTest extends TestCase
     public function test_creating_a_booking_accepts_filling_these_fields()
     {
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => $this->correctAttributes,
             'relationships' => $this->correctRelationships
         ];
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
@@ -209,7 +207,7 @@ class BookingTest extends TestCase
             )
             ->id();
         
-        $this->assertDatabaseHas('bookings', [
+        $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
             'contact_name' => $this->booking->contact_name,
             'contact_email' => $this->booking->contact_email,
@@ -222,22 +220,24 @@ class BookingTest extends TestCase
         // $this->withoutExceptionHandling();
 
         $expectedData = [
-            'type' => 'bookings',
-            'attributes' => $this->acceptedFields,
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
             'relationships' => $this->correctRelationships
         ];
 
         $requestData = [
-            'type' => 'bookings',
-            'attributes' => $this->acceptedFields + $this->readOnlyFields,
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes + $this->readOnlyFields,
             'relationships' => $this->correctRelationships
         ];
+
+        // dd($requestData);
 
         sleep(1);
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($requestData)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
@@ -251,11 +251,11 @@ class BookingTest extends TestCase
 
         $databaseHas = [];
 
-        foreach ($this->acceptedFields as $field => $value) {
+        foreach ($this->correctAttributes as $field => $value) {
             $databaseHas[Str::snake($field)] = $value;
         }
 
-        $this->assertDatabaseHas('bookings', [
+        $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
             ...$databaseHas
         ]);
@@ -270,7 +270,7 @@ class BookingTest extends TestCase
     public function test_creating_a_booking_fails_if_any_required_field_is_omitted()
     {
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => [
                 $this->requiredFields['attributes'][0] => ''
             ]
@@ -300,7 +300,7 @@ class BookingTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->post(route('v1.bookings.store'));
 
@@ -312,14 +312,14 @@ class BookingTest extends TestCase
     public function test_creating_a_booking_correctly_saves_parent_relationships_data()
     {
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => $this->correctAttributes,
             'relationships' => $this->correctRelationships
         ];
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
@@ -331,7 +331,7 @@ class BookingTest extends TestCase
             )
             ->id();
         
-        $this->assertDatabaseHas('bookings', [
+        $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
             'event_id' => $this->event->id,
             'event_date' => $this->event->date,
@@ -355,14 +355,14 @@ class BookingTest extends TestCase
         );
 
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => $this->correctAttributes,
             'relationships' => $wrongRelationships
         ];
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
@@ -378,7 +378,7 @@ class BookingTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->post(route('v1.bookings.store'));
 
@@ -388,7 +388,7 @@ class BookingTest extends TestCase
     public function test_creating_a_booking_fails_if_any_of_the_resources_is_not_related_to_the_others()
     {
         $data = [
-            'type' => 'bookings',
+            'type' => $this->resourceType,
             'attributes' => $this->correctAttributes,
             'relationships' => $this->unrelatedResourcesRelationships
         ];
@@ -405,7 +405,7 @@ class BookingTest extends TestCase
 
         $response = $this
             ->jsonApi()
-            ->expects('bookings')
+            ->expects($this->resourceType)
             ->withData($data)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));

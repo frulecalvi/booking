@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('period');
             $table->integer('day')->nullable();
             // $table->date('date')->nullable();
+            $table->date('date')->nullable();
             $table->time('time');
-            $table->date('end_date')->nullable();
             $table->ulidMorphs('scheduleable');
             $table->string('state');
             $table->timestamps();
