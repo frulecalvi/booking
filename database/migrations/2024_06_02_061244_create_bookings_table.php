@@ -17,11 +17,12 @@ return new class extends Migration
             $table->date('event_date');
             $table->time('event_time');
             $table->foreignUlid('schedule_id');
-            $table->ulidMorphs('scheduleable');
-            $table->string('scheduleable_description', 256);
+            $table->ulidMorphs('bookingable');
+            $table->string('bookingable_description', 256);
             $table->string('reference_code', 10)->unique();
             $table->string('contact_name', 64);
             $table->string('contact_email', 64);
+            $table->string('state');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -23,10 +23,12 @@ class BookingObserver
 
             $existingBooking = Booking::where(['reference_code' => $randomString])->first();
         }
+
+        // dd($booking->event->schedule);
         
         $booking->reference_code = $randomString;
         $booking->event_date = $booking->event->date;
         $booking->event_time = $booking->event->time;
-        $booking->scheduleable_description = $booking->event->schedule->scheduleable->description;
+        $booking->bookingable_description = $booking->event->schedule->scheduleable->description;
     }
 }

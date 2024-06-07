@@ -3,9 +3,11 @@
 namespace App\JsonApi\V1\Bookings;
 
 use App\Models\Event;
+use App\States\Booking\BookingState;
 use Illuminate\Validation\Rule;
 use LaravelJsonApi\Laravel\Http\Requests\ResourceRequest;
 use LaravelJsonApi\Validation\Rule as JsonApiRule;
+use Spatie\ModelStates\Validation\ValidStateRule;
 
 class BookingRequest extends ResourceRequest
 {
@@ -22,7 +24,8 @@ class BookingRequest extends ResourceRequest
             'schedule' => ['required', JsonApiRule::toOne()],
             'product' => ['required', JsonApiRule::toOne()],
             'contactName' => 'required|string|max:64',
-            'contactEmail' => 'required|email|max:64'
+            'contactEmail' => 'required|email|max:64',
+            'state' => ValidStateRule::make(BookingState::class)
         ];
     }
 

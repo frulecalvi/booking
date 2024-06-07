@@ -23,4 +23,14 @@ class TourPolicy
     {
         return $user->hasRole('Admin');
     }
+
+    public function delete(User $user)
+    {
+        return $user->hasRole('Admin');
+    }
+
+    public function update(User $user)
+    {
+        return $user->hasRole('Admin');
+    }
 }

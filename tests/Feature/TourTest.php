@@ -248,4 +248,111 @@ class TourTest extends TestCase
             ...$databaseHas
         ]);
     }
+
+    public function test_deleting_a_tour_is_forbidden_for_unauthenticated_users()
+    {
+        $tour = Tour::factory()->create();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.tours.destroy', $tour->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_deleting_a_schedule_is_forbidden_for_opertator_users()
+    {
+        $tour = Tour::factory()->create();
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.tours.destroy', $tour->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_deleting_a_schedule_is_allowed_for_admin_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $tour = Tour::factory()->create();
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.tours.destroy', $tour->getRouteKey()));
+        
+        $response->assertNoContent();
+
+        $this->assertSoftDeleted($tour);
+    }
+
+    public function test_updating_a_tour_is_forbidden_for_unauthenticated_users()
+    {
+        $tour = Tour::factory()->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $tour->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.tours.update', $tour->getRouteKey()));
+
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_updating_a_tour_is_forbidden_for_operator_users()
+    {
+        $tour = Tour::factory()->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $tour->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.tours.update', $tour->getRouteKey()));
+
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_updating_a_tour_is_allowed_for_admin_users()
+    {
+        $tour = Tour::factory()->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $tour->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.tours.update', $tour->getRouteKey()));
+
+        $response->assertFetchedOne($data);
+    }
 }

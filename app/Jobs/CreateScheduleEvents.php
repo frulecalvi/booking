@@ -38,9 +38,13 @@ class CreateScheduleEvents implements ShouldQueue
                 'time' => $this->schedule->time,
             ]);
 
+            // dd($this->schedule->date);
+
             $this->schedule->events()->save($event);
         } elseif ($this->schedule->period === 'weekly') {
             $futureEventsDates = getAllWeekdayDatesUntil($this->schedule->day, $this->schedule->scheduleable->end_date);
+
+            // dd($this->schedule->scheduleable->end_date);
 
             $events = [];
 

@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\Schedule;
 use App\Models\Tour;
 use App\Models\User;
+use App\States\Booking\Inactive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -30,6 +31,10 @@ class BookingTest extends TestCase
     protected $schedule2;
 
     protected $tour3;
+
+    protected $operatorUser;
+    protected $adminUser;
+    protected $superAdminUser;
     
     protected $correctAttributes;
     protected $correctRelationships;
@@ -64,22 +69,35 @@ class BookingTest extends TestCase
             'eventId' => 'algo',
             'eventDate' => 'algo',
             'eventTime' => 'algo',
-            'scheduleId' => 'algo',
-            'scheduleableType' => 'algo',
-            'scheduleableId' => 'algo',
-            'scheduleableDescription' => 'algo',
+            'bookingId' => 'algo',
+            'bookingableType' => 'algo',
+            'bookingableId' => 'algo',
+            'bookingableDescription' => 'algo',
             'status' => 'algo'
         ];
 
         $this->tour = Tour::factory()->create();
         $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
         $this->event = Event::factory()->for($this->schedule)->create();
-        $this->booking = Booking::factory()->for($this->event)->make();
+        $this->booking = Booking::factory()
+            ->for($this->event)
+            ->for($this->schedule)
+            ->for($this->tour, 'bookingable')
+            ->make();
 
         $this->tour2 = Tour::factory()->create();
         $this->schedule2 = Schedule::factory()->for($this->tour2, 'scheduleable')->create();
 
         $this->tour3 = Tour::factory()->create();
+
+        $this->operatorUser = User::factory()->create();
+        $this->operatorUser->assignRole('Operator');
+
+        $this->adminUser = User::factory()->create();
+        $this->adminUser->assignRole('Admin');
+
+        $this->superAdminUser = User::factory()->create();
+        $this->superAdminUser->assignRole('Super Admin');
         
         $this->correctAttributes = [
             'contactName' => $this->booking->contact_name,
@@ -131,7 +149,7 @@ class BookingTest extends TestCase
 
     public function test_anonymous_user_can_create_a_booking_for_an_event()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,
@@ -337,9 +355,9 @@ class BookingTest extends TestCase
             'event_date' => $this->event->date,
             'event_time' => $this->event->time,
             'schedule_id' => $this->schedule->id,
-            'scheduleable_type' => get_class($this->tour),
-            'scheduleable_id' => $this->tour->id,
-            'scheduleable_description' => $this->tour->description
+            'bookingable_type' => get_class($this->tour),
+            'bookingable_id' => $this->tour->id,
+            'bookingable_description' => $this->tour->description
         ]);
     }
 
@@ -413,5 +431,214 @@ class BookingTest extends TestCase
         // dd($response);
 
         $response->assertErrors(422, $expectedErrors);
+    }
+
+    public function test_fetching_bookings_is_forbidden_for_unauthenticated_users()
+    {
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.bookings.index'));
+
+        // dd($response->getContent());
+        
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_fetching_bookings_is_allowed_for_operator_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.bookings.index'));
+
+        // dd($response->getContent());
+        
+        $response->assertFetchedMany([$this->booking]);
+    }
+
+    public function test_fetching_bookings_is_allowed_for_admin_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.bookings.index'));
+
+        // dd($response->getContent());
+        
+        $response->assertFetchedMany([$this->booking]);
+    }
+
+    public function test_fetching_a_single_booking_is_forbidden_for_unauthenticated_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.bookings.show', $this->booking));
+
+        // dd($response->getContent());
+        
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_fetching_a_single_booking_is_allowed_for_operator_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.bookings.show', $this->booking->getRouteKey()));
+
+        // dd($response->getContent());
+        
+        $response->assertFetchedOne($this->booking);
+    }
+
+    public function test_fetching_a_single_booking_is_allowed_for_admin_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.bookings.show', $this->booking->getRouteKey()));
+
+        // dd($response->getContent());
+        
+        $response->assertFetchedOne($this->booking);
+    }
+
+    public function test_deleting_a_booking_is_forbidden_for_unauthenticated_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.bookings.destroy', $this->booking->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_deleting_a_booking_is_forbidden_for_opertator_users()
+    {
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.bookings.destroy', $this->booking->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_deleting_a_booking_is_forbidden_for_admin_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.bookings.destroy', $this->booking->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_deleting_a_booking_is_allowed_for_super_admin_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $this->booking->save();
+
+        $response = $this
+            ->actingAs($this->superAdminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.bookings.destroy', $this->booking->getRouteKey()));
+        
+        $response->assertNoContent();
+
+        $this->assertSoftDeleted($this->booking);
+    }
+
+    public function test_updating_a_booking_is_forbidden_for_unauthenticated_users()
+    {
+        $this->booking->save();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $this->booking->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.bookings.update', $this->booking->getRouteKey()));
+
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_updating_a_booking_is_allowed_for_operator_users()
+    {
+        $this->withoutExceptionHandling();
+        $this->booking->save();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $this->booking->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.bookings.update', $this->booking->getRouteKey()));
+
+        $response->assertFetchedOne($data);
+    }
+
+    public function test_updating_a_booking_is_allowed_for_admin_users()
+    {
+        $this->booking->save();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $this->booking->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.bookings.update', $this->booking->getRouteKey()));
+
+        $response->assertFetchedOne($data);
     }
 }

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('seating');
             $table->string('state');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -24,6 +24,7 @@ class BookingResource extends JsonApiResource
             'referenceCode' => $this->resource->reference_code,
             'contactName' => $this->resource->contact_name,
             'contactEmail' => $this->resource->contact_email,
+            'state' => $this->resource->state,
             'createdAt' => $this->resource->created_at,
             'updatedAt' => $this->resource->updated_at,
         ];
@@ -40,7 +41,7 @@ class BookingResource extends JsonApiResource
         return [
             $this->relation('event'),
             $this->relation('schedule'),
-            $this->relation('product', 'scheduleable'),
+            $this->relation('product', 'bookingable'),
         ];
     }
 

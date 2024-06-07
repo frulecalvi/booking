@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Event;
 use App\Models\Schedule;
 use App\Models\Tour;
 use App\Models\User;
 use App\States\Schedule\Active;
+use App\States\Schedule\Inactive;
 use DateInterval;
 use DateTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -171,6 +173,20 @@ class ScheduleTest extends TestCase
         $response->assertFetchedMany($createdSchedules);
     }
 
+    public function test_fetching_a_single_schedule_is_forbidden_for_unauthenticated_users()
+    {
+        $this->schedules[Active::$name][0]->save();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.schedules.show', $this->schedules[Active::$name][0]->getRouteKey()));
+
+        // dd($response->getContent());
+        
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
     public function test_creating_a_schedule_is_forbidden_for_unauthenticated_users()
     {
         // $this->withoutExceptionHandling();
@@ -214,6 +230,32 @@ class ScheduleTest extends TestCase
             ->post(route('v1.schedules.store'));
 
         $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_creating_a_schedule_is_allowd_for_admin_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        // dd($data);
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $response->assertCreatedWithServerId(
+            route('v1.schedules.index'),
+            $data
+        );
     }
 
     public function test_creating_a_schedule_ignores_filling_these_fields()
@@ -391,8 +433,8 @@ class ScheduleTest extends TestCase
                 "The {$snakeFieldName} field is required unless period is in once."
                 : (
                     $fieldName === 'date' ?
-                    "The {$snakeFieldName} field is required when period is once."
-                    : "The {$snakeFieldName} field is required."
+                        "The {$snakeFieldName} field is required when period is once."
+                        : "The {$snakeFieldName} field is required."
                 )
             ;
 
@@ -556,5 +598,168 @@ class ScheduleTest extends TestCase
                 'time' => $this->correctAttributes['time'],
             ]);
         }
+    }
+
+    public function test_deleting_a_schedule_is_forbidden_for_unauthenticated_users()
+    {
+        $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.schedules.destroy', $createdSchedule->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_deleting_a_schedule_is_forbidden_for_opertator_users()
+    {
+        $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.schedules.destroy', $createdSchedule->getRouteKey()));
+        
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_deleting_a_schedule_is_allowed_for_admin_users()
+    {
+        $this->withoutExceptionHandling();
+
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.schedules.destroy', $schedule->getRouteKey()));
+        
+        $response->assertNoContent();
+
+        $this->assertSoftDeleted($schedule);
+    }
+
+    public function test_deleting_a_once_schedule_deletes_its_associated_event()
+    {
+        $this->withoutExceptionHandling();
+
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['period' => 'once']);
+        $events = $schedule->events;
+
+        $expectedMissingEvents = [];
+
+        foreach ($events as $event) {
+            $expectedMissingEvents[] = ['id' => $event->id];
+        }
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.schedules.destroy', $schedule->getRouteKey()));
+
+        $response->assertNoContent();
+
+        // dd($expectedMissingEvents);
+
+        foreach ($events as $event) {
+            $this->assertSoftDeleted($event);
+        }
+    }
+
+    public function test_deleting_a_weekly_schedule_deletes_all_its_associated_events()
+    {
+        $this->withoutExceptionHandling();
+
+        $today = new DateTime();
+        $futureDate = $today->add(DateInterval::createFromDateString('365 days'))->format('Y-m-d');
+
+        $this->tour->end_date = $futureDate;
+        $this->tour->save();
+
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['period' => 'weekly']);
+        $events = $schedule->events;
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->delete(route('v1.schedules.destroy', $schedule->getRouteKey()));
+
+        $response->assertNoContent();
+
+        // dd($expectedMissingEvents);
+
+        foreach ($events as $event) {
+            $this->assertSoftDeleted($event);
+        }
+    }
+
+    public function test_updating_a_schedule_is_forbidden_for_unauthenticated_users()
+    {
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $schedule->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.schedules.update', $schedule->getRouteKey()));
+
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_updating_a_schedule_is_forbidden_for_operator_users()
+    {
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $schedule->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->actingAs($this->operatorUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.schedules.update', $schedule->getRouteKey()));
+
+        $response->assertErrorStatus(['status' => '403']);
+    }
+
+    public function test_updating_a_schedule_is_allowed_for_admin_users()
+    {
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'id' => $schedule->getRouteKey(),
+            'attributes' => [
+                'state' => Inactive::$name
+            ]
+        ];
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->patch(route('v1.schedules.update', $schedule->getRouteKey()));
+
+        $response->assertFetchedOne($data);
     }
 }

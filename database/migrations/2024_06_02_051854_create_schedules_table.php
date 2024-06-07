@@ -21,6 +21,7 @@ return new class extends Migration
             $table->ulidMorphs('scheduleable');
             $table->string('state');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

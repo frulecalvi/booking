@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\States\Schedule\Active;
 use App\States\Schedule\ScheduleState;
+use Dyrynda\Database\Support\CascadeSoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,11 +13,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
 
 class Schedule extends Model
 {
-    use HasFactory, HasUlids, HasStates;
+    use HasFactory, HasUlids, HasStates, SoftDeletes, CascadeSoftDeletes;
+
+    protected $cascadeDeletes = ['events'];
 
     protected $fillable = [
         'state',
