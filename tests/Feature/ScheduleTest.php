@@ -8,6 +8,7 @@ use App\Models\Tour;
 use App\Models\User;
 use App\States\Schedule\Active;
 use App\States\Schedule\Inactive;
+use App\States\Tour\Active as TourActive;
 use DateInterval;
 use DateTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,7 +67,7 @@ class ScheduleTest extends TestCase
             // 'monthly',
         ];
 
-        $this->tour = Tour::factory()->create();
+        $this->tour = Tour::factory()->create(['state' => TourActive::class]);
 
         // dd(Schedule::getStatesFor('state')->toArray());
 
@@ -113,6 +114,23 @@ class ScheduleTest extends TestCase
         $this->operatorUser = User::factory()->create();
         $this->adminUser->assignRole('Admin');
         $this->operatorUser->assignRole('Operator');
+    }
+
+    public function test_fetching_schedules_rejects_invalid_accept_header()
+    {
+        // $this->withoutExceptionHandling();
+
+        foreach ($this->schedules as $schedules) {
+            foreach ($schedules as $schedule)
+                $schedule->save();
+        }
+        
+        $response = $this
+            ->get(route('v1.schedules.index'), ['Accept' => 'application/json']);
+
+            // dd($response);
+
+        $response->assertNotAcceptable();
     }
 
     public function test_fetching_schedules_is_forbidden_for_unauthenticated_users()
@@ -602,7 +620,7 @@ class ScheduleTest extends TestCase
 
     public function test_deleting_a_schedule_is_forbidden_for_unauthenticated_users()
     {
-        $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+        $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => Active::$name]);
 
         $response = $this
             ->jsonApi()
@@ -614,7 +632,7 @@ class ScheduleTest extends TestCase
 
     public function test_deleting_a_schedule_is_forbidden_for_opertator_users()
     {
-        $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+        $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => Active::$name]);
 
         $response = $this
             ->actingAs($this->operatorUser)
@@ -700,7 +718,7 @@ class ScheduleTest extends TestCase
 
     public function test_updating_a_schedule_is_forbidden_for_unauthenticated_users()
     {
-        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => Active::$name]);
 
         $data = [
             'type' => $this->resourceType,
@@ -721,7 +739,7 @@ class ScheduleTest extends TestCase
 
     public function test_updating_a_schedule_is_forbidden_for_operator_users()
     {
-        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+        $schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => Active::$name]);
 
         $data = [
             'type' => $this->resourceType,

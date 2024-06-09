@@ -22,23 +22,18 @@ class ScheduleController extends Controller
     use Actions\AttachRelationship;
     use Actions\DetachRelationship;
 
-    public function index(Request $request)
-    {
-        if (! $request->user())
-            abort(401);
-        
-        if ($request->user()->can('viewAny', Schedule::class)) {
-            $schedules = Schedule::get();
-        } else {
-            $schedules = Schedule::active()->get();
-        }
-
-        return new DataResponse($schedules);
-    }
-
-    // public function store(Request $request)
+    // public function index(Request $request)
     // {
     //     if (! $request->user())
     //         abort(401);
+        
+    //     if ($request->user()->can('viewAny', Schedule::class)) {
+    //         $schedules = Schedule::get();
+    //     } else {
+    //         $schedules = Schedule::active()->get();
+    //     }
+
+    //     return new DataResponse($schedules);
     // }
+
 }

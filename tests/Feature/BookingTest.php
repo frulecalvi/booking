@@ -8,6 +8,8 @@ use App\Models\Schedule;
 use App\Models\Tour;
 use App\Models\User;
 use App\States\Booking\Inactive;
+use App\States\Schedule\Active as ScheduleActive;
+use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -76,8 +78,8 @@ class BookingTest extends TestCase
             'status' => 'algo'
         ];
 
-        $this->tour = Tour::factory()->create();
-        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create();
+        $this->tour = Tour::factory()->create(['state' => TourActive::$name]);
+        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name]);
         $this->event = Event::factory()->for($this->schedule)->create();
         $this->booking = Booking::factory()
             ->for($this->event)
@@ -85,10 +87,10 @@ class BookingTest extends TestCase
             ->for($this->tour, 'bookingable')
             ->make();
 
-        $this->tour2 = Tour::factory()->create();
-        $this->schedule2 = Schedule::factory()->for($this->tour2, 'scheduleable')->create();
+        $this->tour2 = Tour::factory()->create(['state' => TourActive::$name]);
+        $this->schedule2 = Schedule::factory()->for($this->tour2, 'scheduleable')->create(['state' => ScheduleActive::$name]);
 
-        $this->tour3 = Tour::factory()->create();
+        $this->tour3 = Tour::factory()->create(['state' => TourActive::$name]);
 
         $this->operatorUser = User::factory()->create();
         $this->operatorUser->assignRole('Operator');
@@ -147,9 +149,23 @@ class BookingTest extends TestCase
         ];
     }
 
+    public function test_fetching_bookings_rejects_invalid_accept_header()
+    {
+        // $this->withoutExceptionHandling();
+
+        $this->booking->save();
+        
+        $response = $this
+            ->get(route('v1.bookings.index'), ['Accept' => 'application/json']);
+
+            // dd($response);
+
+        $response->assertNotAcceptable();
+    }
+
     public function test_anonymous_user_can_create_a_booking_for_an_event()
     {
-        $this->withoutExceptionHandling();
+        // $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,

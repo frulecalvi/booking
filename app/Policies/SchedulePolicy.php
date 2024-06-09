@@ -16,7 +16,7 @@ class SchedulePolicy
 
     public function viewAny(User $user)
     {
-        return $user->hasRole('Admin') ?: false;
+        return true;
     }
 
     public function view(User $user)

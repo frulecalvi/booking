@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ScheduleStateScope;
 use App\States\Schedule\Active;
 use App\States\Schedule\ScheduleState;
 use Dyrynda\Database\Support\CascadeSoftDeletes;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
 
+#[ScopedBy([ScheduleStateScope::class])]
 class Schedule extends Model
 {
     use HasFactory, HasUlids, HasStates, SoftDeletes, CascadeSoftDeletes;

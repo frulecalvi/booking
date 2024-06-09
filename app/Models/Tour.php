@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TourStateScope;
 use App\States\Tour\Active;
 use App\States\Tour\TourState;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+#[ScopedBy([TourStateScope::class])]
 class Tour extends Model
 {
     use HasFactory, HasUlids, HasRelationships, HasStates, SoftDeletes;

@@ -68,6 +68,23 @@ class TourTest extends TestCase
         $this->operatorUser->assignRole('Operator');
     }
 
+    public function test_fetching_tours_rejects_invalid_accept_header()
+    {
+        // $this->withoutExceptionHandling();
+
+        foreach ($this->tours as $tours) {
+            foreach ($tours as $tour)
+                $tour->save();
+        }
+        
+        $response = $this
+            ->get(route('v1.tours.index'), ['Accept' => 'application/json']);
+
+            // dd($response);
+
+        $response->assertNotAcceptable();
+    }
+
     public function test_anonymous_users_can_fetch_only_active_resources()
     {
         // $this->withoutExceptionHandling();
@@ -251,7 +268,7 @@ class TourTest extends TestCase
 
     public function test_deleting_a_tour_is_forbidden_for_unauthenticated_users()
     {
-        $tour = Tour::factory()->create();
+        $tour = Tour::factory()->create(['state' => Active::$name]);
 
         $response = $this
             ->jsonApi()
@@ -263,7 +280,7 @@ class TourTest extends TestCase
 
     public function test_deleting_a_schedule_is_forbidden_for_opertator_users()
     {
-        $tour = Tour::factory()->create();
+        $tour = Tour::factory()->create(['state' => Active::$name]);
 
         $response = $this
             ->actingAs($this->operatorUser)
@@ -293,7 +310,7 @@ class TourTest extends TestCase
 
     public function test_updating_a_tour_is_forbidden_for_unauthenticated_users()
     {
-        $tour = Tour::factory()->create();
+        $tour = Tour::factory()->create(['state' => Active::$name]);
 
         $data = [
             'type' => $this->resourceType,
@@ -314,7 +331,7 @@ class TourTest extends TestCase
 
     public function test_updating_a_tour_is_forbidden_for_operator_users()
     {
-        $tour = Tour::factory()->create();
+        $tour = Tour::factory()->create(['state' => Active::$name]);
 
         $data = [
             'type' => $this->resourceType,
