@@ -78,9 +78,9 @@ class BookingTest extends TestCase
             'status' => 'algo'
         ];
 
-        $this->tour = Tour::factory()->create(['state' => TourActive::$name]);
-        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name]);
-        $this->event = Event::factory()->for($this->schedule)->create();
+        $this->tour = Tour::factory()->create(['state' => TourActive::$name, 'end_date' => now()->addYears(1)]);
+        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'date' => now()->addMonths()]);
+        $this->event = $this->tour->events()->first();
         $this->booking = Booking::factory()
             ->for($this->event)
             ->for($this->schedule)

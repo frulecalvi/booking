@@ -32,8 +32,8 @@ class EventSchema extends Schema
             ID::make()->ulid(),
             Str::make('date'),
             Str::make('time'),
-            DateTime::make('createdAt')->sortable()->readOnly(),
-            DateTime::make('updatedAt')->sortable()->readOnly(),
+            // DateTime::make('createdAt')->sortable()->readOnly(),
+            // DateTime::make('updatedAt')->sortable()->readOnly(),
         ];
     }
 

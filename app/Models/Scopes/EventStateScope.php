@@ -14,7 +14,7 @@ class EventStateScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         if (! auth()->user() || ! auth()->user()->hasRole('Admin')) {
-            $builder->active();
+            $builder->active()->future();
             // dd($builder);
         }
     }

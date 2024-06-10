@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\EventStateScope;
 use App\States\Event\Active;
 use App\States\Event\EventState;
+use DateTime;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
 
+#[ScopedBy([EventStateScope::class])]
 class Event extends Model
 {
     use HasFactory, HasUlids, SoftDeletes, HasStates;
@@ -37,6 +41,11 @@ class Event extends Model
 
     public function scopeActive($query)
     {
-        return $query->whereState('state', Active::class);
+        return $query->whereState($this->qualifyColumn('state'), Active::class);
+    }
+
+    public function scopeFuture($query)
+    {
+        return $query->where($this->qualifyColumn('date'), '>', now());
     }
 }
