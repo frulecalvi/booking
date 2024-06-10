@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUlid('schedule_id')->constrained()->onDelete('cascade');
             $table->date('date');
             $table->time('time');
+            $table->string('state');
             $table->timestamps();
             $table->softDeletes();
         });

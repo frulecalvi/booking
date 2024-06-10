@@ -146,7 +146,7 @@ class TourTest extends TestCase
         $response->assertFetchedMany($createdTours);
     }
 
-    public function test_fetching_a_single_tour_with_associated_events_is_allowed_for_anonymous_users()
+    public function test_fetching_a_single_tour_with_active_associated_events_is_allowed_for_anonymous_users()
     {
         $tour = $this->tours[Active::$name][0];
 

@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Models\Schedule;
 use App\Models\Tour;
 use App\Models\User;
+use App\States\Schedule\Active as ScheduleActive;
+use App\States\Tour\Active as TourActive;
+use App\States\Tour\Inactive as TourInactive;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -22,10 +25,12 @@ class DatabaseSeeder extends Seeder
 
         $user->assignRole('Operator');
 
-        $tours = Tour::factory(5)->create(['end_date' => '2026-07-01']);
+        $createdTours[TourActive::$name] = Tour::factory(2)->create(['state' => TourActive::$name, 'end_date' => '2025-07-01']);
+        $createdTours[TourInactive::$name] = Tour::factory(5)->create(['state' => TourInactive::$name, 'end_date' => '2025-07-01']);
 
-        foreach ($tours as $tour) {
-            Schedule::factory(10)->for($tour, 'scheduleable')->create();
+        foreach ($createdTours as $tours) {
+            foreach ($tours as $tour)
+                Schedule::factory(2)->for($tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'period' => 'weekly']);
         }
 
         // User::factory()->create([

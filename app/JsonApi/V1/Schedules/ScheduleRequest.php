@@ -20,7 +20,7 @@ class ScheduleRequest extends ResourceRequest
     {
         return [
             'product' => ['required', JsonApiRule::toOne()],
-            'period' => ['required', 'string', Rule::in(['once', 'daily', 'weekly', 'monthly'])],
+            'period' => ['required', 'string', Rule::in(['once', 'weekly'])],
             'day' => 'required_unless:period,once|integer|min:1|max:7',
             'date' => 'required_if:period,once|date_format:Y-m-d',
             'time' => 'required|date_format:H:i:s',
