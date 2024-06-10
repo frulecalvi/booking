@@ -19,6 +19,11 @@ class TourPolicy
         return true;
     }
 
+    public function view(?User $user)
+    {
+        return true;
+    }
+
     public function create(User $user)
     {
         return $user->hasRole('Admin');

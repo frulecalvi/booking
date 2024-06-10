@@ -42,7 +42,7 @@ class TourResource extends JsonApiResource
     public function relationships($request): iterable
     {
         return [
-            // @TODO
+            $this->relation('events'),
         ];
     }
 
