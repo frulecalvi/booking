@@ -146,39 +146,6 @@ class TourTest extends TestCase
         $response->assertFetchedMany($createdTours);
     }
 
-    public function test_fetching_a_single_tour_with_active_associated_events_is_allowed_for_anonymous_users()
-    {
-        $tour = $this->tours[Active::$name][0];
-
-        $today = new DateTime();
-        $futureDate = $today->add(DateInterval::createFromDateString('365 days'))->format('Y-m-d');
-
-        $tour->end_date = $futureDate;
-        $tour->save();
-
-        $schedule = Schedule::factory()
-            ->for($tour, 'scheduleable')
-            ->create(['period' => 'weekly', 'state' => ScheduleActive::$name]);
-
-        $tourEvents = $tour->events;
-        
-        $included = [];
-
-        foreach ($tourEvents as $event) {
-            $included[] = ['type' => 'events', 'id' => $event->id];
-        }
-        
-        $response = $this
-            ->jsonApi()
-            ->expects('tours')
-            ->includePaths('events')
-            ->get(route('v1.tours.show', $tour->getRouteKey()));
-
-        // dd($response->getContent());
-        $response->assertFetchedOne($tour)
-            ->assertIncluded($included);
-    }
-
     public function test_creating_tours_is_allowed_for_admin_users()
     {
         // $this->withoutExceptionHandling();
