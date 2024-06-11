@@ -8,6 +8,7 @@
         "php": "^8.2",
         "dyrynda/laravel-cascade-soft-deletes": "^4.4",
         "laravel-json-api/laravel": "^4.0",
+        "laravel/fortify": "^1.21",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
