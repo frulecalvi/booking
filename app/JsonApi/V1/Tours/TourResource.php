@@ -3,6 +3,7 @@
 namespace App\JsonApi\V1\Tours;
 
 use App\Models\Tour;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use LaravelJsonApi\Core\Resources\JsonApiResource;
 
@@ -46,4 +47,10 @@ class TourResource extends JsonApiResource
         ];
     }
 
+    public function meta($request): iterable
+    {
+        $availableDates = array_map(fn($dateTime) => Carbon::parse($dateTime)->format('Y-m-d'), $this->events->pluck('date_time')->toArray());
+        // dd($availableDates);
+        return ['availableDates' => $availableDates];
+    }
 }

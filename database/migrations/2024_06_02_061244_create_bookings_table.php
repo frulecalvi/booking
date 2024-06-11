@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('event_id');
-            $table->date('event_date');
-            $table->time('event_time');
+            $table->dateTime('event_date_time');
             $table->foreignUlid('schedule_id');
             $table->ulidMorphs('bookingable');
             $table->string('bookingable_description', 256);

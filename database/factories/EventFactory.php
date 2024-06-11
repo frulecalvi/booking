@@ -19,8 +19,7 @@ class EventFactory extends Factory
     {
         return [
             // 'schedule_id' => Schedule::factory()->create(),
-            'date' => $this->faker->date(),
-            'time' => $this->faker->time()
+            'date_time' => $this->faker->dateTime(),
         ];
     }
 }

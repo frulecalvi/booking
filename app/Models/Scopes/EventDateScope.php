@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
-class EventStateScope implements Scope
+class EventDateScope implements Scope
 {
     /**
      * Apply the scope to a given Eloquent query builder.
@@ -14,7 +14,7 @@ class EventStateScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         if (! auth()->user() || ! auth()->user()->hasRole('Admin')) {
-            $builder->active();
+            $builder->future()->close();
             // dd($builder);
         }
     }

@@ -2,11 +2,13 @@
 
 namespace App\JsonApi\V1\Events;
 
+use App\JsonApi\Filters\WhereEventDateFilter;
 use App\Models\Event;
 use LaravelJsonApi\Eloquent\Contracts\Paginator;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
 use LaravelJsonApi\Eloquent\Fields\ID;
 use LaravelJsonApi\Eloquent\Fields\Str;
+use LaravelJsonApi\Eloquent\Filters\Where;
 use LaravelJsonApi\Eloquent\Filters\WhereIdIn;
 use LaravelJsonApi\Eloquent\Pagination\PagePagination;
 use LaravelJsonApi\Eloquent\Schema;
@@ -30,8 +32,7 @@ class EventSchema extends Schema
     {
         return [
             ID::make()->ulid(),
-            Str::make('date'),
-            Str::make('time'),
+            Str::make('dateTime')
             // DateTime::make('createdAt')->sortable()->readOnly(),
             // DateTime::make('updatedAt')->sortable()->readOnly(),
         ];
@@ -46,6 +47,7 @@ class EventSchema extends Schema
     {
         return [
             WhereIdIn::make($this),
+            WhereEventDateFilter::make('date', 'date_time')
         ];
     }
 

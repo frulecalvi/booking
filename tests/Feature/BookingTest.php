@@ -69,8 +69,7 @@ class BookingTest extends TestCase
 
         $this->unsupportedFields = [
             'eventId' => 'algo',
-            'eventDate' => 'algo',
-            'eventTime' => 'algo',
+            'eventDateTime' => 'algo',
             'bookingId' => 'algo',
             'bookingableType' => 'algo',
             'bookingableId' => 'algo',
@@ -79,8 +78,9 @@ class BookingTest extends TestCase
         ];
 
         $this->tour = Tour::factory()->create(['state' => TourActive::$name, 'end_date' => now()->addYears(1)]);
-        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'date' => now()->addMonths()]);
+        $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'date' => now()->addDays(15)]);
         $this->event = $this->tour->events()->first();
+        // dd([$this->event, $this->schedule->date]);
         $this->booking = Booking::factory()
             ->for($this->event)
             ->for($this->schedule)
@@ -368,8 +368,7 @@ class BookingTest extends TestCase
         $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
             'event_id' => $this->event->id,
-            'event_date' => $this->event->date,
-            'event_time' => $this->event->time,
+            'event_date_time' => $this->event->date_time,
             'schedule_id' => $this->schedule->id,
             'bookingable_type' => get_class($this->tour),
             'bookingable_id' => $this->tour->id,

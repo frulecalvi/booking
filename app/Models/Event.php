@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\EventDateScope;
 use App\Models\Scopes\EventStateScope;
 use App\States\Event\Active;
 use App\States\Event\EventState;
@@ -16,13 +17,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
 
 #[ScopedBy([EventStateScope::class])]
+#[ScopedBy([EventDateScope::class])]
 class Event extends Model
 {
     use HasFactory, HasUlids, SoftDeletes, HasStates;
 
     protected $fillable = [
-        'date',
-        'time',
+        'date_time'
     ];
 
     protected $casts = [
@@ -46,6 +47,11 @@ class Event extends Model
 
     public function scopeFuture($query)
     {
-        return $query->where($this->qualifyColumn('date'), '>', now());
+        return $query->where($this->qualifyColumn('date_time'), '>', now()->addHour());
+    }
+
+    public function scopeClose($query)
+    {
+        return $query->where($this->qualifyColumn('date_time'), '<=', now()->addDays(30));
     }
 }

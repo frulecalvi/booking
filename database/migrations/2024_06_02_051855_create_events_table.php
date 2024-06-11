@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('schedule_id')->constrained()->onDelete('cascade');
-            $table->date('date');
-            $table->time('time');
+            $table->dateTime('date_time');
             $table->string('state');
             $table->timestamps();
             $table->softDeletes();

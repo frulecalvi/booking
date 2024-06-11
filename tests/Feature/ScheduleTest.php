@@ -565,8 +565,7 @@ class ScheduleTest extends TestCase
         
         $this->assertDatabaseHas('events', [
             'schedule_id' => $id,
-            'date' => $this->correctAttributes['date'],
-            'time' => $this->correctAttributes['time'],
+            'date_time' => "{$this->correctAttributes['date']} {$this->correctAttributes['time']}",
         ]);
     }
 
@@ -612,8 +611,7 @@ class ScheduleTest extends TestCase
         foreach ($expectedEventsDates as $date) {
             $this->assertDatabaseHas('events', [
                 'schedule_id' => $id,
-                'date' => $date,
-                'time' => $this->correctAttributes['time'],
+                'date_time' => "{$date} {$this->correctAttributes['time']}",
             ]);
         }
     }

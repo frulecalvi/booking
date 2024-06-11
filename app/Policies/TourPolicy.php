@@ -2,6 +2,8 @@
 
 namespace App\Policies;
 
+use App\Models\Event;
+use App\Models\Tour;
 use App\Models\User;
 
 class TourPolicy
@@ -37,5 +39,11 @@ class TourPolicy
     public function update(User $user)
     {
         return $user->hasRole('Admin');
+    }
+
+    public function viewEvents(?User $user, Tour $event)
+    {
+        // dd('dsadas');
+        return true;
     }
 }
