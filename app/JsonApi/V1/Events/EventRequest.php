@@ -17,7 +17,8 @@ class EventRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            // @TODO
+            'product' => ['required', JsonApiRule::toOne()],
+            'dateTime' => 'required_if:period,once|date_format:Y-m-d H:i:s',
         ];
     }
 

@@ -21,7 +21,7 @@ class BookingRequest extends ResourceRequest
     {
         return [
             'event' => ['required', JsonApiRule::toOne()],
-            // 'schedule' => ['required', JsonApiRule::toOne()],
+            'schedule' => JsonApiRule::toOne(),
             'product' => ['required', JsonApiRule::toOne()],
             'contactName' => 'required|string|max:64',
             'contactEmail' => 'required|email|max:64',

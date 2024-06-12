@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('schedule_id')->constrained()->onDelete('cascade');
-            $table->nullableUlidMorphs('eventable');
+            $table->foreignUlid('schedule_id')->nullable()->constrained()->onDelete('cascade');
+            $table->ulidMorphs('eventable');
             $table->dateTime('date_time');
             $table->string('state');
             $table->timestamps();

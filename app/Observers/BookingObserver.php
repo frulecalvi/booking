@@ -26,7 +26,9 @@ class BookingObserver
 
         // dd($booking->event->schedule);
         
-        $booking->schedule_id = $booking->event->schedule->id;
+        if (isset($booking->event->schedule->id))
+            $booking->schedule_id = $booking->event->schedule->id;
+        
         $booking->reference_code = $randomString;
         $booking->event_date_time = $booking->event->date_time;
         $booking->bookingable_description = $booking->bookingable->description;

@@ -22,5 +22,5 @@ JsonApiRoute::server('v1')
             $relationships->hasMany('events');
         });
         $server->resource('schedules', ScheduleController::class);
-        // $server->resource('events', EventController::class)->only('index')->;
+        $server->resource('events', EventController::class)->only('index', 'store');
     });

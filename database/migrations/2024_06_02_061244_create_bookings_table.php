@@ -15,7 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('event_id');
             $table->dateTime('event_date_time');
-            $table->foreignUlid('schedule_id');
+            $table->foreignUlid('schedule_id')->nullable();
             $table->ulidMorphs('bookingable');
             $table->string('bookingable_description', 256);
             $table->string('reference_code', 10)->unique();

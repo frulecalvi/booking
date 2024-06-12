@@ -157,7 +157,7 @@ class TourEventTest extends TestCase
     public function test_attaching_a_tour_event_is_not_allowed_for_unauthenticated_users()
     {
         $events = Event::factory(2)
-            ->for($this->schedule)
+            ->for($this->tour, 'eventable')
             ->create(['date_time' => now()->addDay()]);
 
             // dd($events);
@@ -189,7 +189,7 @@ class TourEventTest extends TestCase
     public function test_updating_tour_event_is_not_allowed_for_unauthenticated_users()
     {
         $event = Event::factory()
-            ->for($this->schedule)
+            ->for($this->tour, 'eventable')
             ->create(['date_time' => now()->addDay()]);
 
         $data = [
@@ -211,7 +211,7 @@ class TourEventTest extends TestCase
     public function test_detaching_tour_event_is_not_allowed_for_unauthenticated_users()
     {
         $event = Event::factory()
-            ->for($this->schedule)
+            ->for($this->tour, 'eventable')
             ->create(['date_time' => now()->addDay()]);
 
         $data = [

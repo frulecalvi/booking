@@ -7,6 +7,8 @@ use App\Models\Event;
 use LaravelJsonApi\Eloquent\Contracts\Paginator;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
 use LaravelJsonApi\Eloquent\Fields\ID;
+use LaravelJsonApi\Eloquent\Fields\Relations\BelongsTo;
+use LaravelJsonApi\Eloquent\Fields\Relations\MorphTo;
 use LaravelJsonApi\Eloquent\Fields\Str;
 use LaravelJsonApi\Eloquent\Filters\Where;
 use LaravelJsonApi\Eloquent\Filters\WhereIdIn;
@@ -32,7 +34,9 @@ class EventSchema extends Schema
     {
         return [
             ID::make()->ulid(),
-            Str::make('dateTime')
+            Str::make('dateTime'),
+            BelongsTo::make('schedule'),
+            MorphTo::make('product', 'eventable')->types('tours', 'shows'),
             // DateTime::make('createdAt')->sortable()->readOnly(),
             // DateTime::make('updatedAt')->sortable()->readOnly(),
         ];

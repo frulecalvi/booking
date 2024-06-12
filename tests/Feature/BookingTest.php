@@ -230,6 +230,49 @@ class BookingTest extends TestCase
             'contact_name' => $this->booking->contact_name,
             'contact_email' => $this->booking->contact_email,
             'event_id' => $this->booking->event->id,
+            'bookingable_id' => $this->tour->id,
+        ]);
+    }
+
+    public function test_creating_a_booking_saves_schedule_id_if_the_event_belongs_to_one()
+    {
+        $relationships = [
+            ...$this->correctRelationships,
+            'schedule' => [
+                'data' => [
+                    'type' => 'schedules',
+                    'id' => $this->schedule->id
+                ]
+            ]
+        ];
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $relationships
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($relationships))
+            ->post(route('v1.bookings.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.bookings.index'),
+                $data
+            )
+            ->id();
+        
+        $this->assertDatabaseHas($this->resourceType, [
+            'id' => $id,
+            'contact_name' => $this->booking->contact_name,
+            'contact_email' => $this->booking->contact_email,
+            'event_id' => $this->booking->event->id,
+            'bookingable_id' => $this->tour->id,
+            'schedule_id' => $this->schedule->id,
         ]);
     }
     

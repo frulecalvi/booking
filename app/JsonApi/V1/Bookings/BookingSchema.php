@@ -41,7 +41,7 @@ class BookingSchema extends Schema
             // DateTime::make('updatedAt')->sortable()->readOnly(),
             // DateTime::make('deletedAt')->sortable()->readOnly(),
             BelongsTo::make('event'),
-            // BelongsTo::make('schedule'),
+            BelongsTo::make('schedule'),
             MorphTo::make('product', 'bookingable')->types('tours', 'shows'),
             Str::make('state'),
         ];

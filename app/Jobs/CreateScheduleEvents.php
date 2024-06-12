@@ -58,8 +58,8 @@ class CreateScheduleEvents implements ShouldQueue
         }
 
         if ($events) {
-            $this->schedule->events()->saveMany($events);
             $this->schedule->scheduleable->events()->saveMany($events);
+            $this->schedule->events()->saveMany($events);
         }
     }
 }
