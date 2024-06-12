@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->ulidMorphs('bookingable');
+            $table->foreignUlid('schedule_id')->nullable();
             $table->foreignUlid('event_id');
             $table->dateTime('event_date_time');
-            $table->foreignUlid('schedule_id')->nullable();
-            $table->ulidMorphs('bookingable');
             $table->string('bookingable_description', 256);
             $table->string('reference_code', 10)->unique();
             $table->string('contact_name', 64);

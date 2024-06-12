@@ -62,7 +62,7 @@ class TourBookingTest extends TestCase
         ];
     }
 
-    public function test_creating_tour_bookings_for_anonymous_users()
+    public function test_creating_tour_bookings_is_allowed_for_anonymous_users()
     {
         $this->withoutExceptionHandling();
 
@@ -82,8 +82,8 @@ class TourBookingTest extends TestCase
             ->post(route(('v1.bookings.store')));
         
         $id = $response->assertCreatedWithServerId(
-                route('v1.bookings.index'),
-                $data
+            route('v1.bookings.index'),
+            $data
         )->id();
 
         $this->assertDatabaseHas('bookings', ['id' => $id]);

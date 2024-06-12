@@ -205,7 +205,7 @@ class TourEventTest extends TestCase
             ->withData($data)
             ->patch(route('v1.tours.events.update', $this->tour->getRouteKey(), $event->getRouteKey()));
 
-        $response->assertErrorStatus(['status' => '401']);        
+        $response->assertErrorStatus(['status' => '401']);
     }
 
     public function test_detaching_tour_event_is_not_allowed_for_unauthenticated_users()
