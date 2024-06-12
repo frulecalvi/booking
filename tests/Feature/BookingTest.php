@@ -55,16 +55,12 @@ class BookingTest extends TestCase
             ],
             'relationships' => [
                 'event',
-                'schedule',
                 'product'
             ]
         ];
 
         $this->readOnlyFields = [
             'referenceCode' => 'algo',
-            'createdAt' => now(),
-            'updatedAt' => now(),
-            'deletedAt' => now()
         ];
 
         $this->unsupportedFields = [
@@ -79,8 +75,8 @@ class BookingTest extends TestCase
 
         $this->tour = Tour::factory()->create(['state' => TourActive::$name, 'end_date' => now()->addYears(1)]);
         $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'date' => now()->addDays(15)]);
-        $this->event = $this->tour->events()->first();
-        // dd([$this->event, $this->schedule->date]);
+        $this->event = $this->tour->events->first();
+        // dd([$this->tour->events, $this->schedule]);
         $this->booking = Booking::factory()
             ->for($this->event)
             ->for($this->schedule)
@@ -113,12 +109,6 @@ class BookingTest extends TestCase
                     'id' => $this->event->id
                 ]
             ],
-            'schedule' => [
-                'data' => [
-                    'type' => 'schedules',
-                    'id' => $this->schedule->id
-                ]
-            ],
             'product' => [
                 'data' => [
                     'type' => 'tours',
@@ -132,12 +122,6 @@ class BookingTest extends TestCase
                 'data' => [
                     'type' => 'events',
                     'id' => $this->event->id
-                ]
-            ],
-            'schedule' => [
-                'data' => [
-                    'type' => 'schedules',
-                    'id' => $this->schedule2->id
                 ]
             ],
             'product' => [
@@ -165,7 +149,7 @@ class BookingTest extends TestCase
 
     public function test_anonymous_user_can_create_a_booking_for_an_event()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,

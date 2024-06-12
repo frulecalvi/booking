@@ -91,7 +91,7 @@ class TourTest extends TestCase
 
     public function test_anonymous_users_can_fetch_only_active_resources()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         foreach ($this->tours as $state => $tours) {
             foreach ($tours as $tour)

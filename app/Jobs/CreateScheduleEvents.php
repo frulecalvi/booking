@@ -32,20 +32,20 @@ class CreateScheduleEvents implements ShouldQueue
         if (! $this->schedule->scheduleable)
             return;
 
+        $events = [];
+
         if ($this->schedule->period === 'once') {
-            $event = new Event([
+            $events[] = new Event([
                 'date_time' => "{$this->schedule->date} {$this->schedule->time}",
             ]);
 
             // dd($this->schedule->date);
 
-            $this->schedule->events()->save($event);
         } elseif ($this->schedule->period === 'weekly') {
             $futureEventsDates = getAllWeekdayDatesUntil($this->schedule->day, $this->schedule->scheduleable->end_date);
 
             // dd($this->schedule->scheduleable->end_date);
 
-            $events = [];
 
             foreach ($futureEventsDates as $date) {
                 $events[] = new Event([
@@ -55,7 +55,11 @@ class CreateScheduleEvents implements ShouldQueue
 
             // dd($futureEventsDates);
 
+        }
+
+        if ($events) {
             $this->schedule->events()->saveMany($events);
+            $this->schedule->scheduleable->events()->saveMany($events);
         }
     }
 }

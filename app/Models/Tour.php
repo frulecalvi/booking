@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
@@ -39,13 +40,18 @@ class Tour extends Model
         return $this->hasMany(Schedule::class);
     }
 
-    public function events(): HasManyThrough
+    // public function events(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(Event::class, Schedule::class, 'scheduleable_id')
+    //         ->where(
+    //             'scheduleable_type', 
+    //             array_search(static::class, Relation::morphMap()) ?: static::class
+    //         );
+    // }
+
+    public function events(): MorphMany
     {
-        return $this->hasManyThrough(Event::class, Schedule::class, 'scheduleable_id')
-            ->where(
-                'scheduleable_type', 
-                array_search(static::class, Relation::morphMap()) ?: static::class
-            );
+        return $this->morphMany(Event::class, 'eventable');
     }
 
     public function bookings()

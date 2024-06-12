@@ -50,7 +50,8 @@ class TourResource extends JsonApiResource
     public function meta($request): iterable
     {
         $availableDates = array_map(fn($dateTime) => Carbon::parse($dateTime)->format('Y-m-d'), $this->events->pluck('date_time')->toArray());
-        // dd($availableDates);
-        return ['availableDates' => array_unique($availableDates)];
+        sort($availableDates);
+        
+        return ['availableDates' => array_merge(array_unique($availableDates), [])];
     }
 }
