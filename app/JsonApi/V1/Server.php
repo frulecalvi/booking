@@ -39,7 +39,8 @@ class Server extends BaseServer
             Events\EventSchema::class,
             Schedules\ScheduleSchema::class,
             Tours\TourSchema::class,
-            Shows\ShowSchema::class
+            Shows\ShowSchema::class,
+            Prices\PriceSchema::class,
         ];
     }
 }

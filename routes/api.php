@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\TourController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use LaravelJsonApi\Laravel\Facades\JsonApiRoute;
+use LaravelJsonApi\Laravel\Http\Controllers\JsonApiController;
 use LaravelJsonApi\Laravel\Routing\Relationships;
 use LaravelJsonApi\Laravel\Routing\ResourceRegistrar;
 
@@ -17,10 +18,11 @@ use LaravelJsonApi\Laravel\Routing\ResourceRegistrar;
 JsonApiRoute::server('v1')
     ->prefix('v1')
     ->resources(function (ResourceRegistrar $server) {
-        $server->resource('bookings', BookingController::class);
-        $server->resource('tours', TourController::class)->relationships(function (Relationships $relationships) {
+        $server->resource('bookings', JsonApiController::class);
+        $server->resource('tours', JsonApiController::class)->relationships(function (Relationships $relationships) {
             $relationships->hasMany('events');
         });
-        $server->resource('schedules', ScheduleController::class);
-        $server->resource('events', EventController::class)->only('index', 'store');
+        $server->resource('schedules', JsonApiController::class);
+        $server->resource('events', JsonApiController::class)->only('index', 'store');
+        $server->resource('prices', JsonApiController::class)->only('index', 'store');
     });
