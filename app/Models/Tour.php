@@ -59,6 +59,11 @@ class Tour extends Model
         return $this->hasManyDeep(Booking::class, [Schedule::class, Event::class], ['scheduleable_id']);
     }
 
+    public function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'priceable');
+    }
+
     public function scopeActive($query)
     {
         return $query->whereState('state', Active::class);

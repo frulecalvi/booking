@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Price;
 use App\Models\User;
 
 class PricePolicy
@@ -16,6 +17,16 @@ class PricePolicy
 
     public function create(User $user)
     {
-        return true;
+        return $user->hasRole('Admin');
+    }
+
+    public function update(User $user, Price $price)
+    {
+        return $user->hasRole('Admin');
+    }
+
+    public function delete(User $user, Price $price)
+    {
+        return $user->hasRole('Admin');
     }
 }
