@@ -20,12 +20,11 @@ JsonApiRoute::server('v1')
     ->resources(function (ResourceRegistrar $server) {
         $server->resource('bookings', JsonApiController::class);
         $server->resource('tours', JsonApiController::class)->relationships(function (Relationships $relationships) {
+            $relationships->hasMany('prices');
             $relationships->hasMany('events');
         });
         $server->resource('schedules', JsonApiController::class);
-        $server->resource('events', JsonApiController::class)->only('index', 'show', 'store')->relationships(function (Relationships $relationships) {
-            $relationships->hasMany('prices');
-        });
+        $server->resource('events', JsonApiController::class)->only('index', 'show', 'store');
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');
         $server->resource('tickets', JsonApiController::class)->only('index', 'store');
         $server->resource('tour-categories', JsonApiController::class)->only('show');

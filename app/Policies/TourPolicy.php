@@ -43,7 +43,11 @@ class TourPolicy
 
     public function viewEvents(?User $user, Tour $tour)
     {
-        // dd('dsadas');
+        return true;
+    }
+
+    public function viewPrices(?User $user, Tour $tour)
+    {
         return true;
     }
 }
