@@ -21,6 +21,7 @@ class PriceFactory extends Factory
             'description' => $this->faker->sentence(),
             'amount' => strval($this->faker->randomFloat(2, 0, 99999999.99)),
             'currency' => $this->faker->currencyCode(),
+            'capacity' => $this->faker->numberBetween(0, 50),
         ];
     }
 }

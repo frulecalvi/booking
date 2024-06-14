@@ -25,6 +25,7 @@ class PriceResource extends JsonApiResource
             'description' => $this->resource->description,
             'amount' => $this->resource->amount,
             'currency' => $this->resource->currency,
+            'capacity' => $this->resource->capacity,
             // 'createdAt' => $this->resource->created_at,
             // 'updatedAt' => $this->resource->updated_at,
         ];

@@ -27,7 +27,7 @@ class Tour extends Model
         'description',
         'duration',
         'meeting_point',
-        'seating',
+        'capacity',
         'end_date'
     ];
 

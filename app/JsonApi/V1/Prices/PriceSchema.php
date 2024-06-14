@@ -36,6 +36,7 @@ class PriceSchema extends Schema
             Str::make('description'),
             Str::make('amount'),
             Str::make('currency'),
+            Number::make('capacity'),
             MorphTo::make('product', 'priceable')->types('tours', 'shows'),
             // DateTime::make('createdAt')->sortable()->readOnly(),
             // DateTime::make('updatedAt')->sortable()->readOnly(),

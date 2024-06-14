@@ -22,7 +22,7 @@ class TourFactory extends Factory
             'duration' => $this->faker->time(),
             'meeting_point' => $this->faker->address(),
             'end_date' => $this->faker->date(),
-            'seating' => $this->faker->randomNumber(2),
+            'capacity' => $this->faker->randomNumber(2),
         ];
     }
 }

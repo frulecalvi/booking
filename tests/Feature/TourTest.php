@@ -59,7 +59,7 @@ class TourTest extends TestCase
             'description' => $this->tours[Active::$name][0]->description,
             'duration' => $this->tours[Active::$name][0]->duration,
             'meetingPoint' => $this->tours[Active::$name][0]->meeting_point,
-            'seating' => $this->tours[Active::$name][0]->seating,
+            'capacity' => $this->tours[Active::$name][0]->capacity,
             'endDate' => $this->tours[Active::$name][0]->end_date,
             'state' => Inactive::$name
         ];

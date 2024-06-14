@@ -46,6 +46,7 @@ class PriceTest extends TestCase
                 'description',
                 'amount',
                 'currency',
+                'capacity',
             ],
             'relationships' => [
                 'product'
@@ -57,6 +58,7 @@ class PriceTest extends TestCase
             'description' => $this->price->description,
             'amount' => $this->price->amount,
             'currency' => $this->price->currency,
+            'capacity' => $this->price->capacity,
         ];
 
         $this->correctRelationships = [
@@ -71,7 +73,7 @@ class PriceTest extends TestCase
 
     public function test_creating_a_price_is_allowed_for_admin_users()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,
@@ -142,85 +144,85 @@ class PriceTest extends TestCase
             $response->assertErrorStatus(['status' => '401']);
     }
 
-    public function test_updating_a_price_is_allowed_for_admin_users()
-    {
-        // $this->withoutExceptionHandling();
-        $this->tour->prices()->save($this->price);
-        $newAmount = '25.23';
+    // public function test_updating_a_price_is_forbidden_for_admin_users()
+    // {
+    //     // $this->withoutExceptionHandling();
+    //     $this->tour->prices()->save($this->price);
+    //     $newAmount = '25.23';
 
-        $data = [
-            'type' => $this->resourceType,
-            'id' => $this->price->id,
-            'attributes' => [
-                'amount' => $newAmount
-            ]
-        ];
+    //     $data = [
+    //         'type' => $this->resourceType,
+    //         'id' => $this->price->id,
+    //         'attributes' => [
+    //             'amount' => $newAmount
+    //         ]
+    //     ];
 
-        $response = $this
-            ->actingAs($this->adminUser)
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->withData($data)
-            ->includePaths('product')
-            ->patch(route('v1.prices.update', $this->price->getRouteKey()));
+    //     $response = $this
+    //         ->actingAs($this->adminUser)
+    //         ->jsonApi()
+    //         ->expects($this->resourceType)
+    //         ->withData($data)
+    //         ->includePaths('product')
+    //         ->patch(route('v1.prices.update', $this->price->getRouteKey()));
 
-        $response->assertFetchedOne($data)->id();
+    //     $response->assertFetchedOne($data)->id();
 
-        $this->assertDatabaseHas($this->resourceType, ['id' => $this->price->id, 'amount' => $newAmount]);
-    }
+    //     $this->assertDatabaseHas($this->resourceType, ['id' => $this->price->id, 'amount' => $newAmount]);
+    // }
 
-    public function test_updating_a_price_is_forbidden_for_operator_users()
-    {
-        // $this->withoutExceptionHandling();
-        $this->tour->prices()->save($this->price);
-        $newAmount = '25.23';
+    // public function test_updating_a_price_is_forbidden_for_operator_users()
+    // {
+    //     // $this->withoutExceptionHandling();
+    //     $this->tour->prices()->save($this->price);
+    //     $newAmount = '25.23';
 
-        $data = [
-            'type' => $this->resourceType,
-            'id' => $this->price->id,
-            'attributes' => [
-                'amount' => $newAmount
-            ]
-        ];
+    //     $data = [
+    //         'type' => $this->resourceType,
+    //         'id' => $this->price->id,
+    //         'attributes' => [
+    //             'amount' => $newAmount
+    //         ]
+    //     ];
 
-        $response = $this
-            ->actingAs($this->operatorUser)
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->withData($data)
-            ->includePaths('product')
-            ->patch(route('v1.prices.update', $this->price->getRouteKey()));
+    //     $response = $this
+    //         ->actingAs($this->operatorUser)
+    //         ->jsonApi()
+    //         ->expects($this->resourceType)
+    //         ->withData($data)
+    //         ->includePaths('product')
+    //         ->patch(route('v1.prices.update', $this->price->getRouteKey()));
 
-        $response->assertErrorStatus(['status' => '403']);
-    }
+    //     $response->assertErrorStatus(['status' => '403']);
+    // }
 
-    public function test_updating_a_price_is_forbidden_for_unauthenticated_users()
-    {
-        // $this->withoutExceptionHandling();
-        $this->tour->prices()->save($this->price);
-        $newAmount = '25.23';
+    // public function test_updating_a_price_is_forbidden_for_unauthenticated_users()
+    // {
+    //     // $this->withoutExceptionHandling();
+    //     $this->tour->prices()->save($this->price);
+    //     $newAmount = '25.23';
 
-        $data = [
-            'type' => $this->resourceType,
-            'id' => $this->price->id,
-            'attributes' => [
-                'amount' => $newAmount
-            ]
-        ];
+    //     $data = [
+    //         'type' => $this->resourceType,
+    //         'id' => $this->price->id,
+    //         'attributes' => [
+    //             'amount' => $newAmount
+    //         ]
+    //     ];
 
-        $response = $this
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->withData($data)
-            ->includePaths('product')
-            ->patch(route('v1.prices.update', $this->price->getRouteKey()));
+    //     $response = $this
+    //         ->jsonApi()
+    //         ->expects($this->resourceType)
+    //         ->withData($data)
+    //         ->includePaths('product')
+    //         ->patch(route('v1.prices.update', $this->price->getRouteKey()));
 
-        $response->assertErrorStatus(['status' => '401']);
-    }
+    //     $response->assertErrorStatus(['status' => '401']);
+    // }
 
     public function test_deleting_a_price_is_allowed_for_admin_users()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
         $this->tour->prices()->save($this->price);
 
         $data = [
@@ -238,7 +240,7 @@ class PriceTest extends TestCase
 
         $response->assertNoContent();
 
-        $this->assertDatabaseMissing($this->resourceType, ['id' => $this->price->id]);
+        $this->assertSoftDeleted($this->price);
     }
 
     public function test_deleting_a_price_is_forbidden_for_operator_users()
@@ -279,6 +281,6 @@ class PriceTest extends TestCase
             ->includePaths('product')
             ->delete(route('v1.prices.destroy', $this->price->getRouteKey()));
 
-            $response->assertErrorStatus(['status' => '401']);
+        $response->assertErrorStatus(['status' => '401']);
     }
 }

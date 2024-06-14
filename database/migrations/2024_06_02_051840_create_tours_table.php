@@ -18,7 +18,7 @@ return new class extends Migration
             $table->time('duration');
             $table->string('meeting_point', 128);
             $table->date('end_date');
-            $table->integer('seating');
+            $table->integer('capacity');
             $table->string('state');
             $table->timestamps();
             $table->softDeletes();

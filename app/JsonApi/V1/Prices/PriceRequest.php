@@ -17,10 +17,11 @@ class PriceRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'title' => 'required',
-            'description' => 'required',
-            'amount' => 'required',
-            'currency' => 'required',
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'amount' => 'required|string',
+            'currency' => 'required|string',
+            'capacity' => 'required|integer',
             'product' => [JsonApiRule::toOne()]
         ];
     }

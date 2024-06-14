@@ -38,7 +38,7 @@ class TourSchema extends Schema
             Str::make('description'),
             Str::make('duration'),
             Str::make('meetingPoint'),
-            Number::make('seating'),
+            Number::make('capacity'),
             Str::make('endDate'),
             Str::make('state'),
             DateTime::make('createdAt')->sortable()->readOnly(),
@@ -58,7 +58,7 @@ class TourSchema extends Schema
     {
         return [
             WhereIdIn::make($this),
-            Where::make('seating'),
+            // Where::make('capacity'),
             // Where::make('events.date')
         ];
     }
