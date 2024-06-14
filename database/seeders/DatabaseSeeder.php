@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Price;
 use App\Models\Schedule;
 use App\Models\Tour;
+use App\Models\TourCategory;
 use App\Models\User;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
@@ -25,12 +27,41 @@ class DatabaseSeeder extends Seeder
 
         $user->assignRole('Operator');
 
-        $createdTours[TourActive::$name] = Tour::factory(2)->create(['state' => TourActive::$name, 'end_date' => '2025-07-01']);
-        $createdTours[TourInactive::$name] = Tour::factory(5)->create(['state' => TourInactive::$name, 'end_date' => '2025-07-01']);
+        $category1 = TourCategory::factory()->create();
+        $category2 = TourCategory::factory()->create();
+        $createdTours[TourActive::$name][] = Tour::factory()
+            ->for($category1)
+            ->create(['state' => TourActive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourActive::$name][] = Tour::factory()
+            ->for($category1)
+            ->create(['state' => TourActive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourActive::$name][] = Tour::factory()
+            ->for($category2)
+            ->create(['state' => TourActive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourActive::$name][] = Tour::factory()
+            ->for($category2)
+            ->create(['state' => TourActive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourActive::$name][] = Tour::factory()
+            ->for($category2)
+            ->create(['state' => TourActive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourInactive::$name][] = Tour::factory()
+            ->for($category1)
+            ->create(['state' => TourInactive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourInactive::$name][] = Tour::factory()
+            ->for($category1)
+            ->create(['state' => TourInactive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourInactive::$name][] = Tour::factory()
+            ->for($category2)
+            ->create(['state' => TourInactive::$name, 'end_date' => now()->addYear()]);
+        $createdTours[TourInactive::$name][] = Tour::factory()
+            ->for($category2)
+            ->create(['state' => TourInactive::$name, 'end_date' => now()->addYear()]);
 
         foreach ($createdTours as $tours) {
-            foreach ($tours as $tour)
+            foreach ($tours as $tour) {
+                Price::factory(3)->for($tour, 'priceable')->create();
                 Schedule::factory(2)->for($tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'period' => 'weekly']);
+            }
         }
 
         // User::factory()->create([
