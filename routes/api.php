@@ -25,4 +25,5 @@ JsonApiRoute::server('v1')
         $server->resource('schedules', JsonApiController::class);
         $server->resource('events', JsonApiController::class)->only('index', 'store');
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');
+        $server->resource('tickets', JsonApiController::class)->only('index', 'store');
     });
