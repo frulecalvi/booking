@@ -103,6 +103,11 @@ class Event extends Model
 
         $totalAvailability -= $totalBookings;
 
+        foreach ($pricesAvailability as $priceId => $quantity) {
+            if ($quantity > $totalAvailability)
+                $pricesAvailability[$priceId] = $totalAvailability;
+        }
+
         return [
             'total' => $totalAvailability,
             'prices' => $pricesAvailability

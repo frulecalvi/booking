@@ -46,9 +46,20 @@ class TicketTest extends TestCase
         $this->operatorUser = User::factory()->create();
         $this->operatorUser->assignRole('Operator');
 
-        $this->tour = Tour::factory()->create(['end_date' => now()->addYear(), 'state' => TourActive::$name]);
-        $this->price = Price::factory()->for($this->tour, 'priceable')->create();
-        $this->event = Event::factory()->for($this->tour, 'eventable')->create(['date_time' => now()->addWeek()]);
+        $this->tour = Tour::factory()
+            ->create([
+                'end_date' => now()->addYear(),
+                'state' => TourActive::$name,
+                'capacity' => 60,
+            ]);
+        $this->price = Price::factory()
+            ->for($this->tour, 'priceable')
+            ->create([
+                'capacity' => 30,
+            ]);
+        $this->event = Event::factory()
+            ->for($this->tour, 'eventable')
+            ->create(['date_time' => now()->addWeek()]);
         $this->booking = Booking::factory()
             ->for($this->event)
             ->for($this->tour, 'bookingable')
@@ -165,5 +176,76 @@ class TicketTest extends TestCase
         // dd($response);
 
         $response->assertErrors(422, $expectedErrors);
+    }
+
+    public function test_creating_a_ticket_fails_if_quantity_exceeds_price_availability_for_the_event()
+    {
+        // $this->withoutExceptionHandling();
+
+        $this->tour->capacity = 50;
+        $this->tour->save();
+
+        $this->price->capacity = 20;
+        $this->price->save();
+
+        $ticket = Ticket::factory()
+            ->for($this->price)
+            ->for($this->booking)
+            ->create();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => [...$this->correctAttributes, 'quantity' => 20],
+            'relationships' => $this->correctRelationships
+        ];
+
+        $expectedError = [
+            "detail" => "The value of the quantity field cannot be higher than the price availability for the event.",
+            'source' => ['pointer' => "/data/attributes/quantity"],
+            'status' => '422',
+            "title" => "Unprocessable Entity"
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.tickets.store'));
+
+        $response->assertError(422, $expectedError);
+    }
+
+    public function test_creating_a_ticket_fails_if_quantity_exceeds_total_availability_for_the_event()
+    {
+        // $this->withoutExceptionHandling();
+
+        $this->tour->capacity = 20;
+        $this->tour->save();
+
+        $this->price->capacity = 50;
+        $this->price->save();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => [...$this->correctAttributes, 'quantity' => 21],
+            'relationships' => $this->correctRelationships
+        ];
+
+        $expectedError = [
+            "detail" => "The value of the quantity field cannot be higher than the total availability for the event.",
+            'source' => ['pointer' => "/data/attributes/quantity"],
+            'status' => '422',
+            "title" => "Unprocessable Entity"
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.tickets.store'));
+
+        $response->assertError(422, $expectedError);
     }
 }

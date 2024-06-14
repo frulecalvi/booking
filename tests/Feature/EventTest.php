@@ -267,7 +267,12 @@ class EventTest extends TestCase
     {
         $this->withoutExceptionHandling();
         
-        $tour = Tour::factory()->create(['end_date' => now()->addYear(), 'state' => TourActive::$name]);
+        $tour = Tour::factory()
+            ->create([
+                'end_date' => now()->addYear(),
+                'state' => TourActive::$name,
+                'capacity' => 60,
+            ]);
         $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
         $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 48]);
         $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
@@ -296,16 +301,9 @@ class EventTest extends TestCase
             ->for($price3)
             ->create(['quantity' => 4]);
 
-        // dd($booking);
-
-        // dd($tour->events->first());
-
         $tourPrices = $tour->prices;
         
         $pricesAvailability = [];
-
-        // $eventTickets = $event->tickets;
-        // dd($eventTickets);
 
         foreach ($tourPrices as $price) {
             if ($price->capacity === 0) {
@@ -314,34 +312,66 @@ class EventTest extends TestCase
             }
             
             $priceTickets = $event->tickets->where('price_id', '=', $price->id);
-            // var_dump($priceTickets);
 
             $booked = 0;
             foreach ($priceTickets as $currentTicket) {
                 $booked += $currentTicket->quantity;
             }
-            // var_dump($booked);
 
             $pricesAvailability[$price->id] = $price->capacity - $booked;
         }
-
-        // dd([$price->capacity, $booked, $pricesAvailability[$price->id]]);
-
-        // dd($tour->events->last());
-        // array_shift($meta['availableDates']);
         
         $response = $this
             ->jsonApi()
             ->expects('events')
-            // ->query([
-            //     'filter[event]' => $tourDate
-            // ])
             ->get(route('v1.events.show', $event->getRouteKey()));
 
-        // dd($response->getContent());
         $response->assertFetchedOne($event)
             ->assertJson(['data' => ['meta' => ['availability' => ['prices' => $pricesAvailability]]]]);
         
         $this->assertCount(count($response->json()['data']['meta']['availability']['prices']), $pricesAvailability);
+    }
+
+    public function test_event_availability_meta_data_does_not_exceed_total_availability()
+    {
+        $this->withoutExceptionHandling();
+        
+        $tour = Tour::factory()->create([
+            'end_date' => now()->addYear(),
+            'state' => TourActive::$name,
+            'capacity' => 30,
+        ]);
+
+        $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 40]);
+        $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 50]);
+
+        $event = Event::factory()
+            ->for($tour, 'eventable')
+            ->create(['date_time' => now()->addWeek()]);
+
+        $booking = Booking::factory()
+            ->for($event)
+            ->for($tour, 'bookingable')
+            ->create();
+
+        $tourPrices = $tour->prices;
+        
+        $availability = [
+            'total' => $event->availability()['total']
+        ];
+
+        foreach ($tourPrices as $price) {
+            $availability['prices'][$price->id] = $event->availability()['total'];
+        }
+        
+        $response = $this
+            ->jsonApi()
+            ->expects('events')
+            ->get(route('v1.events.show', $event->getRouteKey()));
+
+        $response->assertFetchedOne($event)
+            ->assertJson(['data' => ['meta' => ['availability' => $availability]]]);
+        
+        $this->assertCount(count($response->json()['data']['meta']['availability']['prices']), $availability['prices']);
     }
 }
