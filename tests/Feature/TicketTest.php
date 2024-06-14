@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 class TicketTest extends TestCase
 {
-    // use RefreshDatabase;
+    use RefreshDatabase;
 
     protected $resourceType;
 
