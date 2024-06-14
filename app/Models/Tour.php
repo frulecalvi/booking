@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Scopes\TourStateScope;
 use App\States\Tour\Active;
 use App\States\Tour\TourState;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -67,5 +68,13 @@ class Tour extends Model
     public function scopeActive($query)
     {
         return $query->whereState('state', Active::class);
+    }
+
+    public function availableDates(): array
+    {
+        $availableDates = array_map(fn($dateTime) => Carbon::parse($dateTime)->format('Y-m-d'), $this->events->pluck('date_time')->toArray());
+        sort($availableDates);
+
+        return array_merge(array_unique($availableDates), []);
     }
 }

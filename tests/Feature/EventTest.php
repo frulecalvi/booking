@@ -180,13 +180,19 @@ class EventTest extends TestCase
         $this->assertDatabaseHas('events', ['id' => $id]);
     }
 
-    public function test_fetching_an_event_includes_meta_data_with_each_one_of_its_prices_availability()
+    public function test_fetching_an_event_includes_meta_data_with_its_total_availability()
     {
         $this->withoutExceptionHandling();
         
-        $tour = Tour::factory()->create(['end_date' => now()->addYear(), 'state' => TourActive::$name]);
+        $tour = Tour::factory()->create(
+            ['end_date' => now()->addYear(),
+            'state' => TourActive::$name,
+            'capacity' => 55
+        ]);
+
         $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
         $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 48]);
+        $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
 
         $event = Event::factory()
             ->for($tour, 'eventable')
@@ -207,6 +213,89 @@ class EventTest extends TestCase
             ->for($price2)
             ->create(['quantity' => 3]);
 
+        $tickets3 = Ticket::factory(2)
+            ->for($booking)
+            ->for($price2)
+            ->create(['quantity' => 4]);
+
+        // dd($booking);
+
+        // dd($tour->events->first());
+
+        $tourPrices = $tour->prices;
+        
+        $availability = $tour->capacity;
+
+        // $eventTickets = $event->tickets;
+        // dd($eventTickets);
+
+        $booked = 0;
+
+        foreach ($tourPrices as $price) {
+            $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+
+            // var_dump($priceTickets);
+
+            foreach ($priceTickets as $currentTicket) {
+                $booked += $currentTicket->quantity;
+            }
+        }
+
+        $availability -= $booked;
+
+        // die;
+
+        // dd([$tour->capacity, $booked, $availability]);
+
+        // dd($tour->events->last());
+        // array_shift($meta['availableDates']);
+        
+        $response = $this
+            ->jsonApi()
+            ->expects('events')
+            // ->query([
+            //     'filter[event]' => $tourDate
+            // ])
+            ->get(route('v1.events.show', $event->getRouteKey()));
+
+        // dd($response->getContent());
+        $response->assertFetchedOne($event)
+            ->assertJson(['data' => ['meta' => ['availability' => ['total' => $availability]]]]);
+    }
+
+    public function test_fetching_an_event_includes_meta_data_with_each_one_of_its_prices_availability()
+    {
+        $this->withoutExceptionHandling();
+        
+        $tour = Tour::factory()->create(['end_date' => now()->addYear(), 'state' => TourActive::$name]);
+        $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
+        $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 48]);
+        $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
+
+        $event = Event::factory()
+            ->for($tour, 'eventable')
+            ->create(['date_time' => now()->addWeek()]);
+
+        $booking = Booking::factory()
+            ->for($event)
+            ->for($tour, 'bookingable')
+            ->create();
+
+        $tickets = Ticket::factory(2)
+            ->for($booking)
+            ->for($price)
+            ->create(['quantity' => 1]);
+
+        $tickets2 = Ticket::factory(3)
+            ->for($booking)
+            ->for($price2)
+            ->create(['quantity' => 3]);
+
+        $tickets3 = Ticket::factory(2)
+            ->for($booking)
+            ->for($price3)
+            ->create(['quantity' => 4]);
+
         // dd($booking);
 
         // dd($tour->events->first());
@@ -219,15 +308,19 @@ class EventTest extends TestCase
         // dd($eventTickets);
 
         foreach ($tourPrices as $price) {
-            if ($price->capacity === 0)
+            if ($price->capacity === 0) {
                 $pricesAvailability[$price->id] = 0;
+                continue;
+            }
             
             $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+            // var_dump($priceTickets);
 
             $booked = 0;
             foreach ($priceTickets as $currentTicket) {
                 $booked += $currentTicket->quantity;
             }
+            // var_dump($booked);
 
             $pricesAvailability[$price->id] = $price->capacity - $booked;
         }
@@ -247,8 +340,8 @@ class EventTest extends TestCase
 
         // dd($response->getContent());
         $response->assertFetchedOne($event)
-            ->assertJson(['data' => ['meta' => ['pricesAvailability' => $pricesAvailability]]]);
+            ->assertJson(['data' => ['meta' => ['availability' => ['prices' => $pricesAvailability]]]]);
         
-        $this->assertCount(count($response->json()['data']['meta']['pricesAvailability']), $pricesAvailability);
+        $this->assertCount(count($response->json()['data']['meta']['availability']['prices']), $pricesAvailability);
     }
 }

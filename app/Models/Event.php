@@ -76,4 +76,36 @@ class Event extends Model
     {
         return $query->where($this->qualifyColumn('date_time'), '<=', now()->addDays(30));
     }
+
+    public function availability(): array
+    {
+        $totalAvailability = $this->eventable->capacity;
+        $productPrices = $this->eventable->prices;
+
+        // dd($productPrices);
+        $pricesAvailability = [];
+
+        $totalBookings = 0;
+
+        foreach ($productPrices as $price) {            
+            $priceTickets = $this->tickets->where('price_id', '=', $price->id);
+
+            $priceBookings = 0;
+            foreach ($priceTickets as $currentTicket) {
+                $priceBookings += $currentTicket->quantity;
+                $totalBookings += $currentTicket->quantity;
+            }
+
+            $pricesAvailability[$price->id] = $price->capacity === 0 ?
+                0
+                : $price->capacity - $priceBookings;
+        }
+
+        $totalAvailability -= $totalBookings;
+
+        return [
+            'total' => $totalAvailability,
+            'prices' => $pricesAvailability
+        ];
+    }
 }
