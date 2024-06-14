@@ -2,9 +2,6 @@
 
 namespace App\JsonApi\V1;
 
-use App\Models\Event;
-use App\Models\Schedule;
-use App\Models\Ticket;
 use Illuminate\Support\Facades\Auth;
 use LaravelJsonApi\Core\Server\Server as BaseServer;
 
@@ -43,6 +40,7 @@ class Server extends BaseServer
             Shows\ShowSchema::class,
             Prices\PriceSchema::class,
             Tickets\TicketSchema::class,
+            TourCategories\TourCategorySchema::class,
         ];
     }
 }

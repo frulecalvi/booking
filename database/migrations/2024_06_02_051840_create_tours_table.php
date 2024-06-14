@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tours', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('tour_category_id')->nullable();
             $table->string('name', 128);
             $table->string('description', 512);
             $table->time('duration');
