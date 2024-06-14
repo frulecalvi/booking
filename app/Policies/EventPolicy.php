@@ -19,4 +19,15 @@ class EventPolicy
     {
         return $user->hasRole('Admin');
     }
+
+    public function view(?User $user)
+    {
+        return true;
+    }
+
+    // public function viewPrices(?User $user, Event $event)
+    // {
+    //     // dd('dsadas');
+    //     return true;
+    // }
 }

@@ -23,7 +23,9 @@ JsonApiRoute::server('v1')
             $relationships->hasMany('events');
         });
         $server->resource('schedules', JsonApiController::class);
-        $server->resource('events', JsonApiController::class)->only('index', 'store');
+        $server->resource('events', JsonApiController::class)->only('index', 'show', 'store')->relationships(function (Relationships $relationships) {
+            $relationships->hasMany('prices');
+        });
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');
         $server->resource('tickets', JsonApiController::class)->only('index', 'store');
     });

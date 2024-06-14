@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
 
@@ -44,6 +46,20 @@ class Event extends Model
     public function eventable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    // public function prices(): HasManyThrough
+    // {
+    //     return $this->hasMany(Price::class, get_class($this->eventable()->getRelated()))
+    //         ->where(
+    //             'eventable_type', 
+    //             array_search(static::class, Relation::morphMap()) ?: static::class
+    //         );
+    // }
+
+    public function tickets(): HasManyThrough
+    {
+        return $this->hasManyThrough(Ticket::class, Booking::class);
     }
 
     public function scopeActive($query)

@@ -2,9 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Price;
+use App\Models\Ticket;
 use App\Models\Tour;
 use App\Models\User;
+use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -174,5 +178,77 @@ class EventTest extends TestCase
         )->id();
 
         $this->assertDatabaseHas('events', ['id' => $id]);
+    }
+
+    public function test_fetching_an_event_includes_meta_data_with_each_one_of_its_prices_availability()
+    {
+        $this->withoutExceptionHandling();
+        
+        $tour = Tour::factory()->create(['end_date' => now()->addYear(), 'state' => TourActive::$name]);
+        $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
+        $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 48]);
+
+        $event = Event::factory()
+            ->for($tour, 'eventable')
+            ->create(['date_time' => now()->addWeek()]);
+
+        $booking = Booking::factory()
+            ->for($event)
+            ->for($tour, 'bookingable')
+            ->create();
+
+        $tickets = Ticket::factory(2)
+            ->for($booking)
+            ->for($price)
+            ->create(['quantity' => 1]);
+
+        $tickets2 = Ticket::factory(3)
+            ->for($booking)
+            ->for($price2)
+            ->create(['quantity' => 3]);
+
+        // dd($booking);
+
+        // dd($tour->events->first());
+
+        $tourPrices = $tour->prices;
+        
+        $pricesAvailability = [];
+
+        // $eventTickets = $event->tickets;
+        // dd($eventTickets);
+
+        foreach ($tourPrices as $price) {
+            if ($price->capacity === 0)
+                $pricesAvailability[$price->id] = 0;
+            
+            $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+
+            $booked = 0;
+            foreach ($priceTickets as $currentTicket) {
+                $booked += $currentTicket->quantity;
+            }
+
+            $pricesAvailability[$price->id] = $price->capacity - $booked;
+        }
+
+        // dd([$price->capacity, $booked, $pricesAvailability[$price->id]]);
+
+        // dd($tour->events->last());
+        // array_shift($meta['availableDates']);
+        
+        $response = $this
+            ->jsonApi()
+            ->expects('events')
+            // ->query([
+            //     'filter[event]' => $tourDate
+            // ])
+            ->get(route('v1.events.show', $event->getRouteKey()));
+
+        // dd($response->getContent());
+        $response->assertFetchedOne($event)
+            ->assertJson(['data' => ['meta' => ['pricesAvailability' => $pricesAvailability]]]);
+        
+        $this->assertCount(count($response->json()['data']['meta']['pricesAvailability']), $pricesAvailability);
     }
 }

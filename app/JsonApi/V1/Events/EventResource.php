@@ -39,4 +39,28 @@ class EventResource extends JsonApiResource
         ];
     }
 
+    public function meta($request): iterable
+    {
+        $productPrices = $this->eventable->prices;
+
+        // dd($productPrices);
+        $pricesAvailability = [];
+
+        foreach ($productPrices as $price) {
+            if ($price->capacity === 0)
+                $pricesAvailability[$price->id] = 0;
+            
+            $priceTickets = $this->tickets->where('price_id', '=', $price->id);
+
+            $booked = 0;
+            foreach ($priceTickets as $currentTicket) {
+                $booked += $currentTicket->quantity;
+            }
+
+            $pricesAvailability[$price->id] = $price->capacity - $booked;
+        }
+
+        return ['pricesAvailability' => $pricesAvailability];
+    }
+
 }

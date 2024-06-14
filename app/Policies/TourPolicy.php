@@ -41,7 +41,7 @@ class TourPolicy
         return $user->hasRole('Admin');
     }
 
-    public function viewEvents(?User $user, Tour $event)
+    public function viewEvents(?User $user, Tour $tour)
     {
         // dd('dsadas');
         return true;

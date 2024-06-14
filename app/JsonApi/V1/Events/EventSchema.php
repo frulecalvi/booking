@@ -8,6 +8,7 @@ use LaravelJsonApi\Eloquent\Contracts\Paginator;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
 use LaravelJsonApi\Eloquent\Fields\ID;
 use LaravelJsonApi\Eloquent\Fields\Relations\BelongsTo;
+use LaravelJsonApi\Eloquent\Fields\Relations\HasManyThrough;
 use LaravelJsonApi\Eloquent\Fields\Relations\MorphTo;
 use LaravelJsonApi\Eloquent\Fields\Str;
 use LaravelJsonApi\Eloquent\Filters\Where;
@@ -36,6 +37,7 @@ class EventSchema extends Schema
             ID::make()->ulid(),
             Str::make('dateTime'),
             BelongsTo::make('schedule'),
+            HasManyThrough::make('prices'),
             MorphTo::make('product', 'eventable')->types('tours', 'shows'),
             // DateTime::make('createdAt')->sortable()->readOnly(),
             // DateTime::make('updatedAt')->sortable()->readOnly(),
