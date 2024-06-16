@@ -84,7 +84,7 @@ class TicketTest extends TestCase
 
         $this->correctAttributes = [
             'name' => $this->ticket->name,
-            'person_id' => $this->ticket->person_id,
+            'personId' => $this->ticket->person_id,
             'nationality' => $this->ticket->nationality,
             'quantity' => $this->ticket->quantity,
         ];

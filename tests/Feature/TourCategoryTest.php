@@ -73,4 +73,20 @@ class TourCategoryTest extends TestCase
         $response->assertFetchedOne($expected)
             ->assertIncluded(array_map(fn($tour) => ['type' => 'tours', 'id' => $tour['id']], $this->tours->toArray()));
     }
+
+    public function test_fetching_a_tour_caegories_is_allowed_for_unauthenticated_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        // $categories = TourCategory::factory(4)->create();
+
+        // dd([$this->tours->first(), $this->category]);
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.tour-categories.index'));
+        
+        $response->assertFetchedMany(TourCategory::all());
+    }
 }

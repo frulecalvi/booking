@@ -18,4 +18,9 @@ class TourCategoryPolicy
     {
         return true;
     }
+
+    public function viewAny(?User $user)
+    {
+        return true;
+    }
 }

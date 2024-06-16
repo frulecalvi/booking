@@ -34,7 +34,7 @@ class TicketSchema extends Schema
         return [
             ID::make()->ulid(),
             Str::make('name'),
-            Str::make('person_id'),
+            Str::make('personId'),
             Str::make('nationality'),
             Number::make('quantity'),
             // MorphTo::make('product', 'ticketable')->types('tours', 'shows'),

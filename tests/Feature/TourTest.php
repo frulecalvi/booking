@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Schedule;
 use App\Models\Tour;
+use App\Models\TourCategory;
 use App\Models\User;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active;
@@ -144,6 +145,30 @@ class TourTest extends TestCase
             ->get(route('v1.tours.index'));
 
         $response->assertFetchedMany($createdTours);
+    }
+
+    public function test_fetching_tours_filtering_by_category_id_is_allowed_for_anonymous_users()
+    {
+        // $this->withoutExceptionHandling();
+
+        $category = TourCategory::factory()->create();
+        $tours = Tour::factory(4)
+            ->for($category)
+            ->create(['state' => Active::$name]);
+        $tours2 = Tour::factory(3)
+            ->create(['state' => Active::$name]);
+
+        foreach ($tours as $tour) {
+            $tour->save();
+        }
+        
+        $response = $this
+            ->jsonApi()
+            ->expects('tours')
+            ->filter(['tourCategoryId' => $category->id])
+            ->get(route('v1.tours.index'));
+
+        $response->assertFetchedMany($tours);
     }
 
     public function test_creating_tours_is_allowed_for_admin_users()

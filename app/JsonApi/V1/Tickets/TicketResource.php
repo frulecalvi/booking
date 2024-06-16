@@ -22,7 +22,7 @@ class TicketResource extends JsonApiResource
     {
         return [
             'name' => $this->resource->name,
-            'person_id' => $this->resource->person_id,
+            'personId' => $this->resource->person_id,
             'nationality' => $this->resource->nationality,
             'quantity' => $this->resource->quantity,
             // 'createdAt' => $this->resource->created_at,

@@ -60,6 +60,7 @@ class TourSchema extends Schema
     {
         return [
             WhereIdIn::make($this),
+            Where::make('tourCategoryId')
             // Where::make('capacity'),
             // Where::make('events.date')
         ];

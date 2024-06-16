@@ -20,7 +20,7 @@ class TicketRequest extends ResourceRequest
     {
         return [
             'name' => 'required',
-            'person_id' => 'required',
+            'personId' => 'required',
             'nationality' => 'required',
             'quantity' => 'required',
             // 'product' => ['required', JsonApiRule::toOne()],
