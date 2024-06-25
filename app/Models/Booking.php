@@ -11,13 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
-use Staudenmeir\EloquentHasManyDeep\HasRelationships;
-use Znck\Eloquent\Relations\BelongsToThrough;
-use Znck\Eloquent\Traits\BelongsToThrough as BelongsToThroughTrait;
 
 class Booking extends Model
 {
-    use HasFactory, HasUlids, HasRelationships, SoftDeletes, BelongsToThroughTrait, HasStates;
+    use HasFactory, HasUlids, SoftDeletes, HasStates;
 
     protected $fillable = [
         'reference_code',

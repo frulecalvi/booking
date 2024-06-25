@@ -13,7 +13,6 @@ use LaravelJsonApi\Eloquent\Fields\Relations\MorphTo;
 use LaravelJsonApi\Eloquent\Filters\WhereIdIn;
 use LaravelJsonApi\Eloquent\Pagination\PagePagination;
 use LaravelJsonApi\Eloquent\Schema;
-use Znck\Eloquent\Relations\BelongsToThrough;
 
 class BookingSchema extends Schema
 {

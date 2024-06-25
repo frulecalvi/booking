@@ -17,12 +17,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\ModelStates\HasStates;
-use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 #[ScopedBy([TourStateScope::class])]
 class Tour extends Model
 {
-    use HasFactory, HasUlids, HasRelationships, HasStates, SoftDeletes;
+    use HasFactory, HasUlids, HasStates, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -42,23 +41,9 @@ class Tour extends Model
         return $this->hasMany(Schedule::class);
     }
 
-    // public function events(): HasManyThrough
-    // {
-    //     return $this->hasManyThrough(Event::class, Schedule::class, 'scheduleable_id')
-    //         ->where(
-    //             'scheduleable_type', 
-    //             array_search(static::class, Relation::morphMap()) ?: static::class
-    //         );
-    // }
-
     public function events(): MorphMany
     {
         return $this->morphMany(Event::class, 'eventable');
-    }
-
-    public function bookings()
-    {
-        return $this->hasManyDeep(Booking::class, [Schedule::class, Event::class], ['scheduleable_id']);
     }
 
     public function prices(): MorphMany
