@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 class TourEventTest extends TestCase
 {
-    // use RefreshDatabase;
+    use RefreshDatabase;
 
     protected $tour;
     protected $schedule;
