@@ -44,6 +44,7 @@ class TourResource extends JsonApiResource
     {
         return [
             $this->relation('events'),
+            $this->relation('prices'),
         ];
     }
 
