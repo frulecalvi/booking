@@ -1,0 +1,64 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$GIT_COMMIT_SHORT
+        container_name: booking_app
+        restart: unless-stopped
+        tty: true
+        working_dir: /var/www/html
+        volumes:
+            - storage:/var/www/html/storage
+            - cache:/var/www/html/bootstrap/cache
+        expose:
+            - 9000
+        depends_on:
+            - db
+        networks:
+            - network
+
+    webserver:
+        build:
+            context: .
+            dockerfile: Dockerfile.nginx
+        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$GIT_COMMIT_SHORT
+        container_name: booking_webserver
+        restart: unless-stopped
+        tty: true
+        ports:
+            - 809:80
+        depends_on:
+            - app
+        networks:
+            - network
+
+    db:
+        build:
+            context: .
+            dockerfile: Dockerfile.mariadb
+        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$GIT_COMMIT_SHORT
+        container_name: booking_db
+        restart: unless-stopped
+        tty: true
+        environment:
+            MARIADB_DATABASE: booking
+            MARIADB_USER: $DB_USERNAME
+            MARIADB_PASSWORD: $DB_PASSWORD
+            MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+        volumes:
+            - db-data:/var/lib/mysql
+        networks:
+            - network
+
+networks:
+    network:
+        driver: bridge
+    
+volumes:
+    storage:
+        driver: local
+    cache:
+        driver: local
+    db-data:
+        driver: local
