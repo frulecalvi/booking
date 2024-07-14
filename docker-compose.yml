@@ -3,7 +3,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$GIT_COMMIT_SHORT
+        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION
         container_name: booking_app
         restart: unless-stopped
         tty: true
@@ -22,7 +22,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.nginx
-        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$GIT_COMMIT_SHORT
+        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$BUILD_VERSION
         container_name: booking_webserver
         restart: unless-stopped
         tty: true
@@ -37,7 +37,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.mariadb
-        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$GIT_COMMIT_SHORT
+        image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$BUILD_VERSION
         container_name: booking_db
         restart: unless-stopped
         tty: true

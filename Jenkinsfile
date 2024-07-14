@@ -15,6 +15,9 @@ pipeline {
                             env.APP_ENV = "dev"
                     }
 
+                    env.BUILD_VERSION = "${env.APP_ENV}-${env.GIT_COMMIT_SHORT}"
+                    env.BUILD_VERSION_LATEST = "${env.APP_ENV}-latest"
+
                     env.APP_URL_CRED = "booking-${env.APP_ENV}-app-url"
                     env.DB_USERNAME_CRED = "booking-${env.APP_ENV}-db-user"
                     env.DB_PASSWORD_CRED = "booking-${env.APP_ENV}-db-password"
@@ -43,7 +46,7 @@ pipeline {
                         sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/g" .env
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
 
-                        echo GIT_COMMIT_SHORT=$GIT_COMMIT_SHORT >> .env
+                        echo BUILD_VERSION=$BUILD_VERSION >> .env
                         echo DOCKER_REPOSITORY_HOST=$DOCKER_REPOSITORY_HOST >> .env
                         echo DOCKER_REPOSITORY_USER=$DOCKER_REPOSITORY_USER >> .env
                     '''
@@ -59,7 +62,7 @@ pipeline {
                     string(credentialsId: "${DOCKER_REPOSITORY_HOST_CRED}", variable: 'DOCKER_REPOSITORY_HOST'),
                     string(credentialsId: "${DOCKER_REPOSITORY_USER_CRED}", variable: 'DOCKER_REPOSITORY_USER'),
                 ]) {
-                    sh 'docker run $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$GIT_COMMIT_SHORT php ./vendor/phpunit/phpunit/phpunit tests/Feature'
+                    sh 'docker run $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION php ./vendor/phpunit/phpunit/phpunit tests/Feature'
                 }
             }
         }
@@ -72,9 +75,18 @@ pipeline {
                     string(credentialsId: "${DOCKER_REPOSITORY_TOKEN_CRED}", variable: 'DOCKER_REPOSITORY_TOKEN'),
                 ]) {
                     sh 'echo "$DOCKER_REPOSITORY_TOKEN" | docker login $DOCKER_REPOSITORY_HOST -u $DOCKER_REPOSITORY_USER --password-stdin'
-                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$GIT_COMMIT_SHORT'
-                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$GIT_COMMIT_SHORT'
-                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$GIT_COMMIT_SHORT'
+                    
+                    sh 'docker image tag $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION_LATEST'
+                    sh 'docker image tag $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$BUILD_VERSION $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$BUILD_VERSION_LATEST'
+                    sh 'docker image tag $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$BUILD_VERSION $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$BUILD_VERSION_LATEST'
+
+                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION'
+                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$BUILD_VERSION'
+                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$BUILD_VERSION'
+
+                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION_LATEST'
+                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$BUILD_VERSION_LATEST'
+                    sh 'docker image push $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-db:$BUILD_VERSION_LATEST'
                 }
             }
         }
