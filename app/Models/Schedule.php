@@ -34,7 +34,9 @@ class Schedule extends Model
     ];
 
     protected $casts = [
-        'state' => ScheduleState::class
+        'state' => ScheduleState::class,
+        'date' => 'datetime:Y-m-d',
+        'time' => 'datetime:H:i:s',
     ];
 
     public function events(): HasMany

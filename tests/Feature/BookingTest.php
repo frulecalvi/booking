@@ -278,7 +278,7 @@ class BookingTest extends TestCase
     
     public function test_creating_a_booking_ignores_filling_these_fields()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $expectedData = [
             'type' => $this->resourceType,
@@ -292,7 +292,7 @@ class BookingTest extends TestCase
             'relationships' => $this->correctRelationships
         ];
 
-        // dd($requestData);
+        // dd($this->tour->events);
 
         sleep(1);
 
@@ -302,6 +302,8 @@ class BookingTest extends TestCase
             ->withData($requestData)
             ->includePaths(...array_keys($this->correctRelationships))
             ->post(route('v1.bookings.store'));
+
+        // dd($response);
 
         $id = $response
             ->assertCreatedWithServerId(

@@ -92,9 +92,9 @@ class ScheduleTest extends TestCase
         $this->correctAttributes = [
             'period' => $this->schedules[Active::$name][0]->period,
             'day' => $this->schedules[Active::$name][0]->day,
-            'date' => $this->schedules[Active::$name][0]->date,
+            'date' => $this->schedules[Active::$name][0]->toArray()['date'],
             // 'date' => $this->schedules[Active::$name][0]->date,
-            'time' => $this->schedules[Active::$name][0]->time,
+            'time' => $this->schedules[Active::$name][0]->toArray()['time'],
             // 'start_date' => $this->schedules[Active::$name][0]->start_date,
             'state' => Active::$name,
         ];
@@ -291,6 +291,8 @@ class ScheduleTest extends TestCase
         ];
 
         sleep(1);
+
+        // var_dump($requestData);
 
         $response = $this
             ->actingAs($this->adminUser)

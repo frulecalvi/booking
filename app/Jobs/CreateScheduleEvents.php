@@ -36,7 +36,7 @@ class CreateScheduleEvents implements ShouldQueue
 
         if ($this->schedule->period === 'once') {
             $events[] = new Event([
-                'date_time' => "{$this->schedule->date} {$this->schedule->time}",
+                'date_time' => "{$this->schedule->toArray()['date']} {$this->schedule->toArray()['time']}",
             ]);
 
             // dd($this->schedule->date);
@@ -49,7 +49,7 @@ class CreateScheduleEvents implements ShouldQueue
 
             foreach ($futureEventsDates as $date) {
                 $events[] = new Event([
-                    'date_time' => "{$date} {$this->schedule->time}",
+                    'date_time' => "{$date} {$this->schedule->toArray()['time']}",
                 ]);
             }
 

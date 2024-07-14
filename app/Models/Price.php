@@ -24,4 +24,8 @@ class Price extends Model
     {
         return $this->morphTo();
     }
+
+    public function getAmountAttribute($value) {
+        return strval(number_format($value, 2, '.', ''));
+    }
 }

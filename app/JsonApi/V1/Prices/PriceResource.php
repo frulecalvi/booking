@@ -23,7 +23,7 @@ class PriceResource extends JsonApiResource
         return [
             'title' => $this->resource->title,
             'description' => $this->resource->description,
-            'amount' => $this->resource->amount,
+            'amount' => $this->resource->toArray()['amount'],
             'currency' => $this->resource->currency,
             'capacity' => $this->resource->capacity,
             // 'createdAt' => $this->resource->created_at,

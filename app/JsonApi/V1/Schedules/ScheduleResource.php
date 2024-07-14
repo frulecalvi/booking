@@ -23,8 +23,8 @@ class ScheduleResource extends JsonApiResource
         return [
             'day' => $this->resource->day,
             // 'date' => $this->resource->date,
-            'time' => $this->resource->time,
-            'date' => $this->resource->date,
+            'time' => $this->resource->toArray()['time'],
+            'date' => $this->resource->toArray()['date'],
             'period' => $this->resource->period,
             'state' => $this->resource->state,
             'createdAt' => $this->resource->created_at,
