@@ -10,20 +10,17 @@ pipeline {
 
                     switch (env.GIT_BRANCH) {
                         case 'origin/main':
-                            env.APP_URL_CRED = "booking-prod-app-url"
-                            env.DB_USERNAME_CRED = "booking-prod-db-user"
-                            env.DB_PASSWORD_CRED = "booking-prod-db-password"
-                            env.DOCKER_REPOSITORY_HOST_CRED = "booking-prod-docker-repository-host"
-                            env.DOCKER_REPOSITORY_USER_CRED = "booking-prod-docker-repository-user"
-                            env.DOCKER_REPOSITORY_TOKEN_CRED = "booking-prod-docker-repository-token"
+                            env.APP_ENV = "prod"
                         default:
-                            env.APP_URL_CRED = "booking-dev-app-url"
-                            env.DB_USERNAME_CRED = "booking-dev-db-user"
-                            env.DB_PASSWORD_CRED = "booking-dev-db-password"
-                            env.DOCKER_REPOSITORY_HOST_CRED = "booking-dev-docker-repository-host"
-                            env.DOCKER_REPOSITORY_USER_CRED = "booking-dev-docker-repository-user"
-                            env.DOCKER_REPOSITORY_TOKEN_CRED = "booking-dev-docker-repository-token"
+                            env.APP_ENV = "dev"
                     }
+
+                    env.APP_URL_CRED = "booking-${env.APP_ENV}-app-url"
+                    env.DB_USERNAME_CRED = "booking-${env.APP_ENV}-db-user"
+                    env.DB_PASSWORD_CRED = "booking-${env.APP_ENV}-db-password"
+                    env.DOCKER_REPOSITORY_HOST_CRED = "booking-${env.APP_ENV}-docker-repository-host"
+                    env.DOCKER_REPOSITORY_USER_CRED = "booking-${env.APP_ENV}-docker-repository-user"
+                    env.DOCKER_REPOSITORY_TOKEN_CRED = "booking-${env.APP_ENV}-docker-repository-token"
                 }
             }
         }
@@ -41,6 +38,7 @@ pipeline {
 
                         cp .env.example .env
 
+                        sed -i "s/APP_ENV=.*/APP_ENV=$APP_ENV/g" .env
                         sed -i "s/APP_URL=.*/APP_URL=${APP_URL//\\//\\\\\\/}/g" .env
                         sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/g" .env
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
