@@ -9,7 +9,7 @@ pipeline {
                     // env.GIT_COMMIT_SHORT = "4e6af51"
 
                     switch (env.GIT_BRANCH) {
-                        case 'origin/master':
+                        case 'origin/main':
                             env.APP_URL_CRED = "booking-prod-app-url"
                             env.DB_USERNAME_CRED = "booking-prod-db-user"
                             env.DB_PASSWORD_CRED = "booking-prod-db-password"
