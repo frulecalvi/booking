@@ -51,7 +51,7 @@ pipeline {
                         echo DOCKER_REPOSITORY_USER=$DOCKER_REPOSITORY_USER >> .env
                     '''
 
-                    sh 'docker-compose build'
+                    sh 'docker compose build'
                 }
             }
         }
@@ -99,8 +99,8 @@ pipeline {
                     string(credentialsId: "${DOCKER_REPOSITORY_TOKEN_CRED}", variable: 'DOCKER_REPOSITORY_TOKEN'),
                 ]) {
                     sh 'echo "$DOCKER_REPOSITORY_TOKEN" | docker login $DOCKER_REPOSITORY_HOST -u $DOCKER_REPOSITORY_USER --password-stdin'
-                    sh 'docker-compose pull'
-                    sh 'docker-compose up -d'
+                    sh 'docker compose pull'
+                    sh 'docker compose up -d'
                 }
             }
         }

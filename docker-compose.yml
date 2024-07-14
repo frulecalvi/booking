@@ -13,8 +13,6 @@ services:
             - cache:/var/www/html/bootstrap/cache
         expose:
             - 9000
-        depends_on:
-            - db
         networks:
             - network
 
@@ -28,8 +26,6 @@ services:
         tty: true
         ports:
             - 809:80
-        depends_on:
-            - app
         networks:
             - network
 

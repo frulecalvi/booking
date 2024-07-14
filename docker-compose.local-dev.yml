@@ -1,0 +1,6 @@
+services:
+    app:
+        volumes:
+            - ./:/var/www/html
+            - storage:/var/www/html/storage
+            - cache:/var/www/html/bootstrap/cache
