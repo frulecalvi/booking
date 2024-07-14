@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Tour;
+use App\States\Event\Active as EventActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +38,7 @@ class TourBookingTest extends TestCase
 
         $this->event = Event::factory()
             ->for($this->tour, 'eventable')
-            ->create(['date_time' => now()->addMonth()]);
+            ->create(['state' => EventActive::$name, 'date_time' => now()->addDays(15)]);
 
         $this->booking = Booking::factory()->make();
 
@@ -64,7 +65,7 @@ class TourBookingTest extends TestCase
 
     public function test_creating_tour_bookings_is_allowed_for_anonymous_users()
     {
-        $this->withoutExceptionHandling();
+        // $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,
@@ -80,6 +81,8 @@ class TourBookingTest extends TestCase
             ->withData($data)
             ->includePaths('product', 'event')
             ->post(route(('v1.bookings.store')));
+
+            // dd($this->event);
         
         $id = $response->assertCreatedWithServerId(
             route('v1.bookings.index'),
