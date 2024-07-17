@@ -45,6 +45,7 @@ class TourSchema extends Schema
             DateTime::make('createdAt')->sortable()->readOnly(),
             DateTime::make('updatedAt')->sortable()->readOnly(),
             HasMany::make('prices'),
+            HasMany::make('schedules'),
             HasMany::make('events')->withFilters(
                 WhereEventDateFilter::make('events.date', 'events.date_time')
             )

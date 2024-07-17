@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Price;
 use App\Models\Schedule;
 use App\Models\Tour;
 use App\Models\TourCategory;
@@ -400,6 +401,41 @@ class TourTest extends TestCase
             ->patch(route('v1.tours.update', $tour->getRouteKey()));
 
         $response->assertFetchedOne($data);
+    }
+
+    public function test_fetching_a_tour_including_its_child_prices_and_schedules_is_allowed_for_unauthenticated_users()
+    {
+        $this->withoutExceptionHandling();
+
+        $tour = Tour::factory()->create(['state' => Active::$name]);
+
+        $schedules = Schedule::factory(2)
+            ->for($tour, 'scheduleable')
+            ->create(['state' => ScheduleActive::$name]);
+
+        $prices = Price::factory(3)
+            ->for($tour, 'priceable')
+            ->create();
+
+        // dd([$this->tours->first(), $this->category]);
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->includePaths('prices', 'schedules')
+            ->get(route('v1.tours.show', $tour->getRouteKey()));
+
+        // dd(array_map(fn($price) => ['type' => 'prices', 'id' => $price['id']], $prices->toArray()));
+        // dd(array_map(fn($schedule) => ['type' => 'schedules', 'id' => $schedule['id']], $schedules->toArray()));
+
+        $response->assertFetchedOne($tour)
+            ->assertIncluded(array_merge(
+                array_map(fn($price) => ['type' => 'prices', 'id' => $price['id']], $prices->toArray()),
+                array_map(fn($schedule) => ['type' => 'schedules', 'id' => $schedule['id']], $schedules->toArray())
+            ));
+
+        // $response->assertFetchedOne($tour)
+        //     ->assertIncluded(array_map(fn($price) => ['type' => 'prices', 'id' => $price['id']], $prices->toArray()));
     }
 
     // public function test_fetching_a_tour_s_events_anonymously_includes_all_its_active_events()

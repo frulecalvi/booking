@@ -43,8 +43,9 @@ class TourResource extends JsonApiResource
     public function relationships($request): iterable
     {
         return [
-            $this->relation('events'),
             $this->relation('prices'),
+            $this->relation('schedules'),
+            $this->relation('events'),
         ];
     }
 

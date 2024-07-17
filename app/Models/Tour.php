@@ -36,9 +36,9 @@ class Tour extends Model
         'state' => TourState::class
     ];
 
-    public function schedules(): HasMany
+    public function schedules(): MorphMany
     {
-        return $this->hasMany(Schedule::class);
+        return $this->morphMany(Schedule::class, 'scheduleable');
     }
 
     public function events(): MorphMany

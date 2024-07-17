@@ -21,6 +21,7 @@ JsonApiRoute::server('v1')
         $server->resource('bookings', JsonApiController::class);
         $server->resource('tours', JsonApiController::class)->relationships(function (Relationships $relationships) {
             $relationships->hasMany('prices');
+            $relationships->hasMany('schedules');
             $relationships->hasMany('events');
         });
         $server->resource('schedules', JsonApiController::class);

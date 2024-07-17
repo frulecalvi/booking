@@ -133,9 +133,14 @@ class ScheduleTest extends TestCase
         $response->assertNotAcceptable();
     }
 
-    public function test_fetching_schedules_is_forbidden_for_unauthenticated_users()
+    public function test_fetching_active_schedules_is_allowed_for_unauthenticated_users()
     {
         // $this->withoutExceptionHandling();
+
+        foreach ($this->schedules as $schedules) {
+            foreach ($schedules as $schedule)
+                $schedule->save();
+        }
 
         $response = $this
             ->jsonApi()
@@ -144,7 +149,7 @@ class ScheduleTest extends TestCase
 
             // var_dump($response);
         
-        $response->assertErrorStatus(['status' => '401']);
+        $response->assertFetchedMany($this->schedules[Active::$name]);
     }
 
     public function test_operator_users_can_fetch_only_active_resources()
