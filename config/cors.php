@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => explode(',', env('CORS_PATHS', 'api/*,sanctum/csrf-cookie')),
+    'paths' => explode(',', env('CORS_PATHS', 'v1/*,sanctum/csrf-cookie')),
 
     'allowed_methods' => ['*'],
 
@@ -29,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
