@@ -21,6 +21,9 @@ pipeline {
                     env.APP_URL_CRED = "booking-${env.APP_ENV}-app-url"
                     env.DB_USERNAME_CRED = "booking-${env.APP_ENV}-db-user"
                     env.DB_PASSWORD_CRED = "booking-${env.APP_ENV}-db-password"
+                    env.SESSION_DOMAIN_CRED = "booking-${env.APP_ENV}-session-domain"
+                    env.SANCTUM_STATEFUL_DOMAINS_CRED = "booking-${env.APP_ENV}-sanctum-stateful-domains"
+                    env.CORS_ALLOWED_ORIGINS_CRED = "booking-${env.APP_ENV}-cors-allowed-origins"
                     env.DOCKER_REPOSITORY_HOST_CRED = "booking-${env.APP_ENV}-docker-repository-host"
                     env.DOCKER_REPOSITORY_USER_CRED = "booking-${env.APP_ENV}-docker-repository-user"
                     env.DOCKER_REPOSITORY_TOKEN_CRED = "booking-${env.APP_ENV}-docker-repository-token"
@@ -34,6 +37,9 @@ pipeline {
                     string(credentialsId: "${APP_URL_CRED}", variable: 'APP_URL'),
                     string(credentialsId: "${DB_USERNAME_CRED}", variable: 'DB_USERNAME'),
                     string(credentialsId: "${DB_PASSWORD_CRED}", variable: 'DB_PASSWORD'),
+                    string(credentialsId: "${SESSION_DOMAIN_CRED}", variable: 'SESSION_DOMAIN'),
+                    string(credentialsId: "${SANCTUM_STATEFUL_DOMAINS_CRED}", variable: 'SANCTUM_STATEFUL_DOMAINS'),
+                    string(credentialsId: "${CORS_ALLOWED_ORIGINS_CRED}", variable: 'CORS_ALLOWED_ORIGINS'),
                     string(credentialsId: "${DOCKER_REPOSITORY_HOST_CRED}", variable: 'DOCKER_REPOSITORY_HOST'),
                     string(credentialsId: "${DOCKER_REPOSITORY_USER_CRED}", variable: 'DOCKER_REPOSITORY_USER'),
                 ]) {
@@ -45,6 +51,9 @@ pipeline {
                         sed -i "s/APP_URL=.*/APP_URL=${APP_URL//\\//\\\\\\/}/g" .env
                         sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/g" .env
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
+                        sed -i "s/SESSION_DOMAIN=.*/SESSION_DOMAIN=$SESSION_DOMAIN/g" .env
+                        sed -i "s/SANCTUM_STATEFUL_DOMAINS=.*/SANCTUM_STATEFUL_DOMAINS=$SANCTUM_STATEFUL_DOMAINS/g" .env
+                        sed -i "s/CORS_ALLOWED_ORIGINS=.*/CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS/g" .env
 
                         echo BUILD_VERSION=$BUILD_VERSION >> .env
                         echo DOCKER_REPOSITORY_HOST=$DOCKER_REPOSITORY_HOST >> .env
