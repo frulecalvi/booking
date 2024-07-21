@@ -29,4 +29,5 @@ JsonApiRoute::server('v1')
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');
         $server->resource('tickets', JsonApiController::class)->only('index', 'store');
         $server->resource('tour-categories', JsonApiController::class)->only('index', 'show');
+        $server->resource('payments', JsonApiController::class)->only('store', 'index');
     });

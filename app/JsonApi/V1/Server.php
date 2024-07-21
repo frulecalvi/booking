@@ -41,6 +41,7 @@ class Server extends BaseServer
             Prices\PriceSchema::class,
             Tickets\TicketSchema::class,
             TourCategories\TourCategorySchema::class,
+            Payments\PaymentSchema::class,
         ];
     }
 }
