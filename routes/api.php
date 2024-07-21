@@ -10,6 +10,8 @@ use LaravelJsonApi\Laravel\Facades\JsonApiRoute;
 use LaravelJsonApi\Laravel\Http\Controllers\JsonApiController;
 use LaravelJsonApi\Laravel\Routing\Relationships;
 use LaravelJsonApi\Laravel\Routing\ResourceRegistrar;
+use LaravelJsonApi\Laravel\Routing\ActionRegistrar;
+use App\Http\Controllers\Api\V1\PaymentController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -29,5 +31,9 @@ JsonApiRoute::server('v1')
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');
         $server->resource('tickets', JsonApiController::class)->only('index', 'store');
         $server->resource('tour-categories', JsonApiController::class)->only('index', 'show');
-        $server->resource('payments', JsonApiController::class)->only('store', 'index');
+        $server->resource('payments', PaymentController::class)
+            ->only('store', 'index')
+            ->actions('-actions', function (ActionRegistrar $actions) {
+                $actions->withId()->post('generate-mp-preference');
+            });
     });

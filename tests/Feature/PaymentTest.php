@@ -7,10 +7,11 @@ use App\Models\Event;
 use App\Models\Payment;
 use App\Models\Schedule;
 use App\Models\Tour;
+use App\Services\MercadoPago;
 use App\States\Tour\Active as TourActive;
 use App\States\Schedule\Active as ScheduleActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use MercadoPago\Client\Preference\PreferenceClient;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -57,6 +58,7 @@ class PaymentTest extends TestCase
             ],
         ];
     }
+
     public function test_creating_a_payment_with_its_related_booking_is_allowed_for_anonymous_users(): void
     {
         $this->withoutExceptionHandling();
@@ -79,5 +81,65 @@ class PaymentTest extends TestCase
         )->id();
 
         $this->assertDatabaseHas('payments', ['id' => $id]);
+    }
+
+    public function test_creating_a_payment_without_specified_booking_id_is_not_allowed(): void
+    {
+//        $this->withoutExceptionHandling();
+
+        $data = [
+            'type' => $this->resourceType,
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->post(route('v1.payments.store'));
+
+        $expectedError = [
+            "detail" => "The booking field is required.",
+            'source' => ['pointer' => "/data/relationships/booking"],
+            'status' => '422',
+            "title" => "Unprocessable Entity"
+        ];
+
+        $response->assertError('422', $expectedError);
+    }
+
+    public function test_fetching_payments_is_not_allowed_for_unauthenticated_users(): void
+    {
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->get(route('v1.payments.index'));
+
+        $response->assertErrorStatus(['status' => '401']);
+    }
+
+    public function test_calling_mercadopago_preference_endpoint_for_a_payment_returns_meta_with_valid_preference_id()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->payment->save();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(route('v1.payments.generateMpPreference', $this->payment->id));
+
+//        dd($response);
+        $preferenceId = $response->json('meta.preferenceId');
+
+        $expectedMeta = [
+            'preferenceId' => $preferenceId,
+        ];
+
+        $client = new PreferenceClient;
+        $preference = $client->get($preferenceId);
+
+        $this->assertEquals($preference->getResponse()->getStatusCode(), 200);
+
+        $response->assertExactMetaWithoutData($expectedMeta);
     }
 }
