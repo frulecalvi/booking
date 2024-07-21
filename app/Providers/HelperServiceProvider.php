@@ -11,8 +11,7 @@ class HelperServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $file = app_path() . "/helpers.php";
-        require_once $file;
+        //
     }
 
     /**
@@ -20,6 +19,7 @@ class HelperServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $file = app_path() . "/helpers.php";
+        require_once $file;
     }
 }
