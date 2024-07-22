@@ -34,6 +34,7 @@ JsonApiRoute::server('v1')
         $server->resource('payments', PaymentController::class)
             ->only('store', 'index')
             ->actions('-actions', function (ActionRegistrar $actions) {
-                $actions->withId()->post('generate-mp-preference');
+                $actions->withId()->post('mp-create-preference');
+                $actions->withId()->post('mp-update');
             });
     });

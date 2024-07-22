@@ -126,7 +126,7 @@ class PaymentTest extends TestCase
         $response = $this
             ->jsonApi()
             ->expects($this->resourceType)
-            ->post(route('v1.payments.generateMpPreference', $this->payment->id));
+            ->post(route('v1.payments.mpCreatePreference', $this->payment->id));
 
 //        dd($response);
         $preferenceId = $response->json('meta.preferenceId');
@@ -138,7 +138,7 @@ class PaymentTest extends TestCase
         $client = new PreferenceClient;
         $preference = $client->get($preferenceId);
 
-        $this->assertEquals($preference->getResponse()->getStatusCode(), 200);
+        $this->assertEquals(200, $preference->getResponse()->getStatusCode());
 
         $response->assertExactMetaWithoutData($expectedMeta);
     }

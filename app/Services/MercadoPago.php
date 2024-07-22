@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Payment;
 use MercadoPago\Exceptions\MPApiException;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
@@ -16,9 +17,11 @@ class MercadoPago
         MercadoPagoConfig::setAccessToken(config('mercadopago.access_token'));
     }
 
-    public function createPreferenceForPayment($id): string
+    public function createPreferenceForPayment(Payment $payment): string
     {
         $client = new PreferenceClient();
+
+//        dd($payment);
 
         try {
             $preference = $client->create([
@@ -29,11 +32,13 @@ class MercadoPago
                         "unit_price" => 2000,
                     ],
                 ],
-                'notification_url' => "http://url.webhook/{$id}",
+                'notification_url' => route('v1.payments.mpUpdate', $payment),
             ]);
         } catch (MPApiException $exception) {
-            throw \Exception($exception->getMessage());
+            throw new \Exception($exception->getMessage());
         }
+
+//        dd($client->get($preference->id));
 
         return $preference->id;
     }

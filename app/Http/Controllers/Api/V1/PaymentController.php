@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\JsonApi\V1\Payments\PaymentRequest;
 use App\Services\MercadoPago;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use LaravelJsonApi\Core\Responses\ErrorResponse;
 use LaravelJsonApi\Core\Responses\MetaResponse;
 use LaravelJsonApi\Laravel\Http\Controllers\Actions;
@@ -24,12 +25,14 @@ class PaymentController extends Controller
     use Actions\AttachRelationship;
     use Actions\DetachRelationship;
 
-    public function generateMpPreference(Request $request, MercadoPago $mercadoPago)
+    public function mpCreatePreference(Request $request, MercadoPago $mercadoPago)
     {
-        $paymentId = request()->route('payment')->id;
+        $payment = request()->route('payment');
+
+//        dd($payment);
 
         try {
-            $preferenceId = $mercadoPago->createPreferenceForPayment($paymentId);
+            $preferenceId = $mercadoPago->createPreferenceForPayment($payment);
         } catch (\Exception $exception) {
             $error = [
                 'status' => 500,
@@ -40,5 +43,10 @@ class PaymentController extends Controller
         }
 
         return MetaResponse::make(['preferenceId' => $preferenceId]);
+    }
+
+    public function mpUpdate(Request $request, MercadoPago $mercadoPago)
+    {
+        Log::info(dump($request->all()));
     }
 }
