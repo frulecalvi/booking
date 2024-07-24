@@ -47,6 +47,11 @@ class MercadoPagoTest extends TestCase
         ];
     }
 
+//    public function test_mercadopago_create_preference_returns_meta_data_with_preference_id()
+//    {
+//
+//    }
+
     public function test_mercadopago_webhook_endpoint_is_defined()
     {
         $this->payment->save();
@@ -54,5 +59,6 @@ class MercadoPagoTest extends TestCase
         $response = $this->postJson(route('v1.payments.mpUpdate', $this->payment), []);
 
         $this->assertNotEquals(404, $response->status());
+        $this->assertNotEquals(405, $response->status());
     }
 }
