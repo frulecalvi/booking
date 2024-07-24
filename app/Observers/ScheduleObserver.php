@@ -7,7 +7,7 @@ use App\Models\Schedule;
 
 class ScheduleObserver
 {
-    public function created(Schedule $schedule)
+    public function created(Schedule $schedule): void
     {
         CreateScheduleEvents::dispatch($schedule);
     }

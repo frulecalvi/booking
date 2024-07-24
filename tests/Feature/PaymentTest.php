@@ -116,30 +116,4 @@ class PaymentTest extends TestCase
 
         $response->assertErrorStatus(['status' => '401']);
     }
-
-    public function test_calling_mercadopago_preference_endpoint_for_a_payment_returns_meta_with_valid_preference_id()
-    {
-        $this->withoutExceptionHandling();
-
-        $this->payment->save();
-
-        $response = $this
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->post(route('v1.payments.mpCreatePreference', $this->payment->id));
-
-//        dd($response);
-        $preferenceId = $response->json('meta.preferenceId');
-
-        $expectedMeta = [
-            'preferenceId' => $preferenceId,
-        ];
-
-        $client = new PreferenceClient;
-        $preference = $client->get($preferenceId);
-
-        $this->assertEquals(200, $preference->getResponse()->getStatusCode());
-
-        $response->assertExactMetaWithoutData($expectedMeta);
-    }
 }

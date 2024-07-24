@@ -6,10 +6,12 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Schedule;
 use App\Models\Tour;
+use App\Services\MercadoPago;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use MercadoPago\Client\Preference\PreferenceClient;
 use Tests\TestCase;
 
 class MercadoPagoTest extends TestCase
@@ -60,5 +62,28 @@ class MercadoPagoTest extends TestCase
 
         $this->assertNotEquals(404, $response->status());
         $this->assertNotEquals(405, $response->status());
+    }
+
+    public function test_mercadopago_webhook_endpoint_responds_200_when_valid_request(): void
+    {
+//        $this->withoutExceptionHandling();
+
+        $this->payment->save();
+
+        $secret = config('mercadopago.webhook_secret');
+        $dataId = 'some-fake-id';
+        $ts = round(microtime(true));
+        $xRequestId = 'some-request-id';
+        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts}";
+        $xSignature = "ts={$ts},v1=" . hash_hmac('sha256', $manifest, $secret);
+
+        $response = $this
+            ->withHeaders([
+                'x-request-id' => $xRequestId,
+                'x-signature' => $xSignature,
+            ])
+            ->postJson(route('v1.payments.mpUpdate', ['data.id' => $dataId]));
+
+        $response->assertStatus(200);
     }
 }

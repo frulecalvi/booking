@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\Booking;
 use App\Models\Payment;
 use MercadoPago\Exceptions\MPApiException;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
-use MercadoPago\Resources\Preference;
+use MercadoPago\Net\MPResponse;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class MercadoPago
 {
@@ -17,7 +19,10 @@ class MercadoPago
         MercadoPagoConfig::setAccessToken(config('mercadopago.access_token'));
     }
 
-    public function createPreferenceForPayment(Payment $payment): string
+    /**
+     * @throws \Exception
+     */
+    public function createPreferenceForBooking(Booking $booking): string
     {
         $client = new PreferenceClient();
 
@@ -32,7 +37,6 @@ class MercadoPago
                         "unit_price" => 2000,
                     ],
                 ],
-                'notification_url' => route('v1.payments.mpUpdate', $payment),
             ]);
         } catch (MPApiException $exception) {
             throw new \Exception($exception->getMessage());
@@ -41,5 +45,36 @@ class MercadoPago
 //        dd($client->get($preference->id));
 
         return $preference->id;
+    }
+
+    public function validateWebhookNotification(
+        string $webhookSecret,
+        string $xRequestId,
+        string $xSignature,
+        string $dataId
+    ): bool
+    {
+        foreach (explode(",", $xSignature) as $part) {
+            [$clave, $valor] = explode('=', $part);
+
+            if ($clave === 'ts') {
+                $ts = $valor;
+            } elseif ($clave === 'v1') {
+                $hash = $valor;
+            }
+        }
+
+        if (! isset($ts) || ! isset($hash))
+            throw new BadRequestException('x-signature header is not valid');
+
+        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts}";
+
+        $sha = hash_hmac('sha256', $manifest, $webhookSecret);
+
+        if ($sha !== $hash) {
+            throw new BadRequestException('Request is not valid');
+        }
+
+        return true;
     }
 }

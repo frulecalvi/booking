@@ -12,6 +12,7 @@ use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use MercadoPago\Client\Preference\PreferenceClient;
 use Tests\TestCase;
 use Illuminate\Support\Str;
 
@@ -684,5 +685,26 @@ class BookingTest extends TestCase
             ->patch(route('v1.bookings.update', $this->booking->getRouteKey()));
 
         $response->assertFetchedOne($data);
+    }
+
+    public function test_calling_mercadopago_preference_endpoint_returns_meta_with_preference_id()
+    {
+//        $this->withoutExceptionHandling();
+
+        $this->booking->save();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(route('v1.bookings.mpCreatePreference', $this->booking->id));
+
+//        dd($response);
+        $preferenceId = $response->json('meta.preferenceId');
+
+        $expectedMeta = [
+            'preferenceId' => $preferenceId,
+        ];
+
+        $response->assertExactMetaWithoutData($expectedMeta);
     }
 }

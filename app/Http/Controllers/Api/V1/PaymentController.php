@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use LaravelJsonApi\Core\Responses\ErrorResponse;
 use LaravelJsonApi\Core\Responses\MetaResponse;
 use LaravelJsonApi\Laravel\Http\Controllers\Actions;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class PaymentController extends Controller
 {
@@ -25,28 +26,26 @@ class PaymentController extends Controller
     use Actions\AttachRelationship;
     use Actions\DetachRelationship;
 
-    public function mpCreatePreference(Request $request, MercadoPago $mercadoPago)
-    {
-        $payment = request()->route('payment');
-
-//        dd($payment);
-
-        try {
-            $preferenceId = $mercadoPago->createPreferenceForPayment($payment);
-        } catch (\Exception $exception) {
-            $error = [
-                'status' => 500,
-                'detail' => $exception->getMessage(),
-            ];
-
-            return ErrorResponse::make($error);
-        }
-
-        return MetaResponse::make(['preferenceId' => $preferenceId]);
-    }
-
     public function mpUpdate(Request $request, MercadoPago $mercadoPago)
     {
-        Log::info(dump($request->all()));
+        $webhookSecret = config('mercadopago.webhook_secret');
+        $xRequestId = $request->header('x-request-id');
+        $xSignature = $request->header('x-signature');
+        $dataId = $request->query('data_id');
+
+        try {
+            $webhookValidation = $mercadoPago->validateWebhookNotification(
+                webhookSecret: $webhookSecret,
+                xRequestId: $xRequestId,
+                xSignature: $xSignature,
+                dataId: $dataId,
+            );
+        } catch (BadRequestException $e) {
+            abort(400, $e->getMessage());
+        }
+
+
+
+        response();
     }
 }

@@ -20,7 +20,10 @@ use App\Http\Controllers\Api\V1\PaymentController;
 JsonApiRoute::server('v1')
     ->prefix('v1')
     ->resources(function (ResourceRegistrar $server) {
-        $server->resource('bookings', JsonApiController::class);
+        $server->resource('bookings', BookingController::class)
+            ->actions('-actions', function (ActionRegistrar $actions) {
+                $actions->withId()->post('mp-create-preference');
+            });
         $server->resource('tours', JsonApiController::class)->relationships(function (Relationships $relationships) {
             $relationships->hasMany('prices');
             $relationships->hasMany('schedules');
@@ -34,7 +37,6 @@ JsonApiRoute::server('v1')
         $server->resource('payments', PaymentController::class)
             ->only('store', 'index')
             ->actions('-actions', function (ActionRegistrar $actions) {
-                $actions->withId()->post('mp-create-preference');
-                $actions->withId()->post('mp-update');
+                $actions->post('mp-update');
             });
     });
