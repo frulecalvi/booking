@@ -34,3 +34,15 @@ if (! function_exists('getAllWeekdayDatesUntil')) {
         return $dates;
     }
 }
+
+if (! function_exists('roundPrice')) {
+    function roundPrice(float $amount): float {
+        return floatval(number_format($amount, 2, '.', ''));
+    }
+}
+
+if (! function_exists('formatPriceAsString')) {
+    function formatPriceAsString(float $amount): string {
+        return strval(number_format($amount, 2, '.', ''));
+    }
+}

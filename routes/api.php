@@ -22,6 +22,7 @@ JsonApiRoute::server('v1')
     ->resources(function (ResourceRegistrar $server) {
         $server->resource('bookings', BookingController::class)
             ->actions('-actions', function (ActionRegistrar $actions) {
+                $actions->withId()->post('calculate-total-price');
                 $actions->withId()->post('mp-create-preference');
             });
         $server->resource('tours', JsonApiController::class)->relationships(function (Relationships $relationships) {

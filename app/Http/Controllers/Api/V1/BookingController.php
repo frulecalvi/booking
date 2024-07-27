@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Services\BookingService;
 use App\Services\MercadoPago;
 use Illuminate\Http\Request;
 use LaravelJsonApi\Core\Responses\ErrorResponse;
@@ -22,6 +23,24 @@ class BookingController extends Controller
     use Actions\UpdateRelationship;
     use Actions\AttachRelationship;
     use Actions\DetachRelationship;
+
+    private $bookingService;
+
+    public function __construct(
+        BookingService $bookingService
+    )
+    {
+        $this->bookingService = new BookingService();
+    }
+
+    public function calculateTotalPrice()
+    {
+        $booking = request()->route('booking');
+
+        $totalPrice = $this->bookingService->calculateTotalPrice($booking);
+
+        return MetaResponse::make(['totalPrice' => formatPriceAsString($totalPrice)]);
+    }
 
     public function mpCreatePreference(Request $request, MercadoPago $mercadoPago)
     {

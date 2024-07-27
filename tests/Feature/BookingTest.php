@@ -4,15 +4,19 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Price;
 use App\Models\Schedule;
+use App\Models\Ticket;
 use App\Models\Tour;
 use App\Models\User;
+use App\Services\MercadoPago;
 use App\States\Booking\Inactive;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use MercadoPago\Client\Preference\PreferenceClient;
+use MercadoPago\Exceptions\MPApiException;
 use Tests\TestCase;
 use Illuminate\Support\Str;
 
@@ -20,28 +24,30 @@ class BookingTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $resourceType;
-    protected $requiredFields;
-    protected $readOnlyFields;
-    protected $unsupportedFields;
+    protected string $resourceType;
+    protected array $requiredFields;
+    protected array $readOnlyFields;
+    protected array $unsupportedFields;
 
-    protected $tour;
-    protected $schedule;
-    protected $event;
-    protected $booking;
+    protected Tour $tour;
+    protected Schedule $schedule;
+    protected Event $event;
+    protected Booking $booking;
 
-    protected $tour2;
-    protected $schedule2;
+    protected Tour $tour2;
+    protected Schedule $schedule2;
 
-    protected $tour3;
+    protected Tour $tour3;
 
-    protected $operatorUser;
-    protected $adminUser;
-    protected $superAdminUser;
+    protected User $operatorUser;
+    protected User $adminUser;
+    protected User $superAdminUser;
     
-    protected $correctAttributes;
-    protected $correctRelationships;
-    protected $unrelatedResourcesRelationships;
+    protected array $correctAttributes;
+    protected array $correctRelationships;
+    protected array $unrelatedResourcesRelationships;
+
+    protected MercadoPago $mercadoPago;
 
     public function setUp(): void
     {
@@ -132,6 +138,8 @@ class BookingTest extends TestCase
                 ]
             ]
         ];
+
+        $this->mercadoPago = new MercadoPago();
     }
 
     public function test_fetching_bookings_rejects_invalid_accept_header()
@@ -692,6 +700,16 @@ class BookingTest extends TestCase
 //        $this->withoutExceptionHandling();
 
         $this->booking->save();
+        $prices = Price::factory(3)
+            ->for($this->booking->bookingable, 'priceable')
+            ->create();
+
+        foreach ($prices as $price) {
+            $tickets = Ticket::factory(1)
+                ->for($this->booking)
+                ->for($price)
+                ->create();
+        }
 
         $response = $this
             ->jsonApi()
@@ -701,10 +719,88 @@ class BookingTest extends TestCase
 //        dd($response);
         $preferenceId = $response->json('meta.preferenceId');
 
+        $preference = $this->mercadoPago->getPreference($preferenceId);
+
+        $this->assertEquals(200, $preference->getStatusCode());
+
         $expectedMeta = [
             'preferenceId' => $preferenceId,
         ];
 
         $response->assertExactMetaWithoutData($expectedMeta);
     }
+
+    public function test_calling_booking_calculate_total_returns_meta_with_correct_total_value()
+    {
+//        $this->withoutExceptionHandling();
+
+        $this->booking->save();
+        $prices = Price::factory(3)
+            ->for($this->booking->bookingable, 'priceable')
+            ->create();
+
+        foreach ($prices as $price) {
+            $tickets = Ticket::factory(1)
+                ->for($this->booking)
+                ->for($price)
+                ->create();
+        }
+
+        $totalPrice = 0;
+        foreach ($this->booking->tickets as $ticket) {
+            $totalPrice += $ticket->price->amount * $ticket->quantity;
+        }
+
+//        dd($this->booking->tickets, $totalPrice);
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(route('v1.bookings.calculateTotalPrice', $this->booking->id));
+
+        $expectedMeta = [
+            'totalPrice' => formatPriceAsString($totalPrice),
+        ];
+
+        $response->assertExactMetaWithoutData($expectedMeta);
+    }
+
+    public function test_calling_mercadopago_preference_endpoint_crates_preference_with_correct_ext_ref_and_one_item_with_correct_amount()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->booking->save();
+        $prices = Price::factory(3)
+            ->for($this->booking->bookingable, 'priceable')
+            ->create();
+
+        foreach ($prices as $price) {
+            $tickets = Ticket::factory(1)
+                ->for($this->booking)
+                ->for($price)
+                ->create();
+        }
+
+        $totalPrice = 0;
+        foreach ($this->booking->tickets as $ticket) {
+            $totalPrice += $ticket->price->amount * $ticket->quantity;
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(route('v1.bookings.mpCreatePreference', $this->booking->id));
+
+//        dd($response);
+        $preferenceId = $response->json('meta.preferenceId');
+
+        $preference = $this->mercadoPago->getPreference($preferenceId);
+
+        $this->assertEquals($this->booking->id, $preference->getContent()['external_reference']);
+        $this->assertEquals(1, count($preference->getContent()['items']));
+        $this->assertEquals($totalPrice, $preference->getContent()['items'][0]['unit_price']);
+
+//        dd($preference->getContent());
+    }
+
 }

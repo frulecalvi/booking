@@ -8,15 +8,33 @@ use MercadoPago\Exceptions\MPApiException;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
 use MercadoPago\Net\MPResponse;
+use MercadoPago\Resources\Preference;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class MercadoPago
 {
     protected PreferenceClient $client;
+    protected BookingService $bookingService;
 
     public function __construct()
     {
         MercadoPagoConfig::setAccessToken(config('mercadopago.access_token'));
+        $this->client = new PreferenceClient();
+        $this->bookingService = new BookingService();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getPreference(string $preferenceId)
+    {
+        try {
+            $preference = $this->client->get($preferenceId);
+        } catch (MPApiException $e) {
+            return $e;
+        }
+
+        return $preference->getResponse();
     }
 
     /**
@@ -24,22 +42,24 @@ class MercadoPago
      */
     public function createPreferenceForBooking(Booking $booking): string
     {
-        $client = new PreferenceClient();
+        $totalPrice = $this->bookingService->calculateTotalPrice($booking);
 
-//        dd($payment);
+//        dd($totalPrice);
 
         try {
-            $preference = $client->create([
+            $preference = $this->client->create([
                 "items" => [
                     [
                         "title" => "Mi producto",
                         "quantity" => 1,
-                        "unit_price" => 2000,
+                        "unit_price" => $totalPrice,
                     ],
                 ],
+                "external_reference" => $booking->id,
             ]);
-        } catch (MPApiException $exception) {
-            throw new \Exception($exception->getMessage());
+        } catch (MPApiException $e) {
+            dd($e->getApiResponse(), $totalPrice);
+            throw new \Exception($e->getMessage());
         }
 
 //        dd($client->get($preference->id));

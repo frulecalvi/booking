@@ -26,6 +26,6 @@ class Price extends Model
     }
 
     public function getAmountAttribute($value) {
-        return strval(number_format($value, 2, '.', ''));
+        return formatPriceAsString($value);
     }
 }
