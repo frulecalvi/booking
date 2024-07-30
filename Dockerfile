@@ -38,8 +38,6 @@ USER www-data
 
 RUN composer dump-autoload --optimize
 
-RUN php artisan key:generate
-
 USER root
 
 CMD ["php-fpm"]

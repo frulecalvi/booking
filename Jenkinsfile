@@ -18,6 +18,7 @@ pipeline {
                     env.BUILD_VERSION = "${env.APP_ENV}-${env.GIT_COMMIT_SHORT}"
                     env.BUILD_VERSION_LATEST = "${env.APP_ENV}-latest"
 
+                    env.APP_KEY_CRED = "booking-${env.APP_ENV}-app-key"
                     env.APP_URL_CRED = "booking-${env.APP_ENV}-app-url"
                     env.DB_USERNAME_CRED = "booking-${env.APP_ENV}-db-user"
                     env.DB_PASSWORD_CRED = "booking-${env.APP_ENV}-db-password"
@@ -34,6 +35,7 @@ pipeline {
         stage('Build') {
             steps {
                 withCredentials([
+                    string(credentialsId: "${APP_KEY_CRED}", variable: 'APP_KEY'),
                     string(credentialsId: "${APP_URL_CRED}", variable: 'APP_URL'),
                     string(credentialsId: "${DB_USERNAME_CRED}", variable: 'DB_USERNAME'),
                     string(credentialsId: "${DB_PASSWORD_CRED}", variable: 'DB_PASSWORD'),
@@ -48,6 +50,7 @@ pipeline {
                         cp .env.example .env
 
                         sed -i "s/APP_ENV=.*/APP_ENV=$APP_ENV/g" .env
+                        sed -i "s/APP_ENV=.*/APP_KEY=$APP_KEY/g" .env
                         sed -i "s/APP_URL=.*/APP_URL=${APP_URL//\\//\\\\\\/}/g" .env
                         sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/g" .env
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
