@@ -7,6 +7,7 @@ use App\Models\Tour;
 use LaravelJsonApi\Eloquent\Contracts\Paginator;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
 use LaravelJsonApi\Eloquent\Fields\ID;
+use LaravelJsonApi\Eloquent\Fields\Relations\BelongsTo;
 use LaravelJsonApi\Eloquent\Fields\Str;
 use LaravelJsonApi\Eloquent\Fields\Number;
 use LaravelJsonApi\Eloquent\Fields\Relations\HasMany;
@@ -46,6 +47,7 @@ class TourSchema extends Schema
             DateTime::make('updatedAt')->sortable()->readOnly(),
             HasMany::make('prices'),
             HasMany::make('schedules'),
+            BelongsTo::make('tourCategory'),
             HasMany::make('events')->withFilters(
                 WhereEventDateFilter::make('events.date', 'events.date_time')
             )
