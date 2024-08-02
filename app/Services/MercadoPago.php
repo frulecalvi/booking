@@ -71,7 +71,7 @@ class MercadoPago
                 ]
             ]);
         } catch (MPApiException $e) {
-            dd($e->getApiResponse(), $totalPrice);
+//            dd($e->getApiResponse(), $totalPrice);
             throw new \Exception($e->getMessage());
         }
 
