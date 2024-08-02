@@ -73,7 +73,7 @@ class TicketTest extends TestCase
             'attributes' => [
                 'name',
                 'person_id',
-                'nationality',
+//                'nationality',
                 'quantity',
             ],
             'relationships' => [
@@ -85,7 +85,7 @@ class TicketTest extends TestCase
         $this->correctAttributes = [
             'name' => $this->ticket->name,
             'personId' => $this->ticket->person_id,
-            'nationality' => $this->ticket->nationality,
+//            'nationality' => $this->ticket->nationality,
             'quantity' => $this->ticket->quantity,
         ];
 

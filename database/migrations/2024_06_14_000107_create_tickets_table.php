@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignUlid('price_id')->constrained();
             $table->string('name');
             $table->string('person_id');
-            $table->string('nationality');
+            $table->string('nationality')->nullable();
             $table->integer('quantity');
             $table->timestamps();
         });

@@ -21,7 +21,7 @@ class TicketRequest extends ResourceRequest
         return [
             'name' => 'required',
             'personId' => 'required',
-            'nationality' => 'required',
+//            'nationality' => 'required',
             'quantity' => 'required',
             // 'product' => ['required', JsonApiRule::toOne()],
             'booking' => ['required', JsonApiRule::toOne()],
