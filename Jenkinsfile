@@ -52,7 +52,7 @@ pipeline {
                         cp .env.example .env
 
                         sed -i "s/APP_ENV=.*/APP_ENV=$APP_ENV/g" .env
-                        sed -i "s/APP_ENV=.*/APP_KEY=$APP_KEY/g" .env
+                        sed -i "s/APP_KEY=.*/APP_KEY=$APP_KEY/g" .env
                         sed -i "s/APP_URL=.*/APP_URL=${APP_URL//\\//\\\\\\/}/g" .env
                         sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/g" .env
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
