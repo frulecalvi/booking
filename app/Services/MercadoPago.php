@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use MercadoPago\Exceptions\MPApiException;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
@@ -16,11 +17,18 @@ class MercadoPago
     protected PreferenceClient $client;
     protected BookingService $bookingService;
 
-    public function __construct()
+//    public function __construct()
+//    {
+//        MercadoPagoConfig::setAccessToken(config('mercadopago.access_token'));
+//        $this->client = new PreferenceClient();
+//        $this->bookingService = new BookingService();
+//    }
+
+    public function setConfig(string $accessToken)
     {
-        MercadoPagoConfig::setAccessToken(config('mercadopago.access_token'));
+//        dd($accessToken);
+        MercadoPagoConfig::setAccessToken($accessToken);
         $this->client = new PreferenceClient();
-        $this->bookingService = new BookingService();
     }
 
     /**
@@ -40,8 +48,10 @@ class MercadoPago
     /**
      * @throws \Exception
      */
-    public function createPreferenceForBooking(Booking $booking): string
+    public function createPreference(PaymentMethod $paymentMethod, Booking $booking): string
     {
+        $this->bookingService = new BookingService();
+
         $totalPrice = $this->bookingService->calculateTotalPrice($booking);
 
 //        dd($totalPrice);
@@ -55,7 +65,10 @@ class MercadoPago
                         "unit_price" => $totalPrice,
                     ],
                 ],
-                "external_reference" => $booking->id,
+                "metadata" => [
+                    'bookingId' => $booking->id,
+                    'paymentMethodId' => $paymentMethod->id,
+                ]
             ]);
         } catch (MPApiException $e) {
             dd($e->getApiResponse(), $totalPrice);

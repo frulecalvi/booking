@@ -695,41 +695,6 @@ class BookingTest extends TestCase
         $response->assertFetchedOne($data);
     }
 
-    public function test_calling_mercadopago_preference_endpoint_returns_meta_with_preference_id()
-    {
-//        $this->withoutExceptionHandling();
-
-        $this->booking->save();
-        $prices = Price::factory(3)
-            ->for($this->booking->bookingable, 'priceable')
-            ->create();
-
-        foreach ($prices as $price) {
-            $tickets = Ticket::factory(1)
-                ->for($this->booking)
-                ->for($price)
-                ->create();
-        }
-
-        $response = $this
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->post(route('v1.bookings.mpCreatePreference', $this->booking->id));
-
-//        dd($response);
-        $preferenceId = $response->json('meta.preferenceId');
-
-        $preference = $this->mercadoPago->getPreference($preferenceId);
-
-        $this->assertEquals(200, $preference->getStatusCode());
-
-        $expectedMeta = [
-            'preferenceId' => $preferenceId,
-        ];
-
-        $response->assertExactMetaWithoutData($expectedMeta);
-    }
-
     public function test_calling_booking_calculate_total_returns_meta_with_correct_total_value()
     {
 //        $this->withoutExceptionHandling();
@@ -765,42 +730,5 @@ class BookingTest extends TestCase
         $response->assertExactMetaWithoutData($expectedMeta);
     }
 
-    public function test_calling_mercadopago_preference_endpoint_crates_preference_with_correct_ext_ref_and_one_item_with_correct_amount()
-    {
-        $this->withoutExceptionHandling();
-
-        $this->booking->save();
-        $prices = Price::factory(3)
-            ->for($this->booking->bookingable, 'priceable')
-            ->create();
-
-        foreach ($prices as $price) {
-            $tickets = Ticket::factory(1)
-                ->for($this->booking)
-                ->for($price)
-                ->create();
-        }
-
-        $totalPrice = 0;
-        foreach ($this->booking->tickets as $ticket) {
-            $totalPrice += $ticket->price->amount * $ticket->quantity;
-        }
-
-        $response = $this
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->post(route('v1.bookings.mpCreatePreference', $this->booking->id));
-
-//        dd($response);
-        $preferenceId = $response->json('meta.preferenceId');
-
-        $preference = $this->mercadoPago->getPreference($preferenceId);
-
-        $this->assertEquals($this->booking->id, $preference->getContent()['external_reference']);
-        $this->assertEquals(1, count($preference->getContent()['items']));
-        $this->assertEquals($totalPrice, $preference->getContent()['items'][0]['unit_price']);
-
-//        dd($preference->getContent());
-    }
 
 }

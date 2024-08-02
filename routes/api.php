@@ -1,9 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\V1\BookingController;
-use App\Http\Controllers\Api\V1\EventController;
-use App\Http\Controllers\Api\V1\ScheduleController;
-use App\Http\Controllers\Api\V1\TourController;
+use App\Http\Controllers\Api\V1\PaymentMethodController;
+use App\Http\Controllers\MercadoPagoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use LaravelJsonApi\Laravel\Facades\JsonApiRoute;
@@ -11,7 +10,6 @@ use LaravelJsonApi\Laravel\Http\Controllers\JsonApiController;
 use LaravelJsonApi\Laravel\Routing\Relationships;
 use LaravelJsonApi\Laravel\Routing\ResourceRegistrar;
 use LaravelJsonApi\Laravel\Routing\ActionRegistrar;
-use App\Http\Controllers\Api\V1\PaymentController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -35,9 +33,12 @@ JsonApiRoute::server('v1')
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');
         $server->resource('tickets', JsonApiController::class)->only('index', 'store');
         $server->resource('tour-categories', JsonApiController::class)->only('index', 'show');
-        $server->resource('payments', PaymentController::class)
-            ->only('store', 'index')
+        $server->resource('payments', JsonApiController::class)->only('store', 'index');
+        $server->resource('payment-methods', PaymentMethodController::class)
+            ->only('index', 'show', 'store')
             ->actions('-actions', function (ActionRegistrar $actions) {
-                $actions->post('mp-update');
+                $actions->withId()->post('prepare-payment');
             });
     });
+
+Route::post('mercadopago-webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopagoWebhook');

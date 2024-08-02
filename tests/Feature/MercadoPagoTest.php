@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\Schedule;
 use App\Models\Tour;
 use App\Services\MercadoPago;
@@ -35,9 +36,17 @@ class MercadoPagoTest extends TestCase
             ->for($this->event)
             ->create();
 
-        $this->payment = Payment::factory()
-            ->for($this->booking)
-            ->make();
+        $this->paymentMethod = PaymentMethod::factory()
+            ->hasAttached(
+                $this->tour
+            )
+            ->create([
+                'payment_method_type' => 'mercadopago',
+                'secrets' => [
+                    'access_token' => 'some_fake_access_token',
+                    'webhook_secret' => 'some_fake_webhook_secret',
+                ]
+            ]);
 
         $this->correctRelationships = [
             'booking' => [
@@ -56,9 +65,9 @@ class MercadoPagoTest extends TestCase
 
     public function test_mercadopago_webhook_endpoint_is_defined()
     {
-        $this->payment->save();
+        $response = $this->postJson(route('mercadopagoWebhook'));
 
-        $response = $this->postJson(route('v1.payments.mpUpdate', $this->payment), []);
+//        dd($response);
 
         $this->assertNotEquals(404, $response->status());
         $this->assertNotEquals(405, $response->status());
@@ -68,9 +77,8 @@ class MercadoPagoTest extends TestCase
     {
 //        $this->withoutExceptionHandling();
 
-        $this->payment->save();
-
-        $secret = config('mercadopago.webhook_secret');
+        $secret = $this->paymentMethod->secrets['webhook_secret'];
+//        dd($secret);
         $dataId = 'some-fake-id';
         $ts = round(microtime(true));
         $xRequestId = 'some-request-id';
@@ -82,7 +90,10 @@ class MercadoPagoTest extends TestCase
                 'x-request-id' => $xRequestId,
                 'x-signature' => $xSignature,
             ])
-            ->postJson(route('v1.payments.mpUpdate', ['data.id' => $dataId]));
+            ->postJson(route('mercadopagoWebhook', [
+                'paymentMethodId' => $this->paymentMethod->id,
+                'data.id' => $dataId,
+            ]));
 
         $response->assertStatus(200);
     }

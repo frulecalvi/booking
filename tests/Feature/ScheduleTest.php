@@ -255,7 +255,7 @@ class ScheduleTest extends TestCase
         $response->assertErrorStatus(['status' => '403']);
     }
 
-    public function test_creating_a_schedule_is_allowd_for_admin_users()
+    public function test_creating_a_schedule_is_allowed_for_admin_users()
     {
         // $this->withoutExceptionHandling();
 

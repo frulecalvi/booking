@@ -41,24 +41,4 @@ class BookingController extends Controller
 
         return MetaResponse::make(['totalPrice' => formatPriceAsString($totalPrice)]);
     }
-
-    public function mpCreatePreference(Request $request, MercadoPago $mercadoPago)
-    {
-        $booking = request()->route('booking');
-
-//        dd($payment);
-
-        try {
-            $preferenceId = $mercadoPago->createPreferenceForBooking($booking);
-        } catch (\Exception $exception) {
-            $error = [
-                'status' => 500,
-                'detail' => $exception->getMessage(),
-            ];
-
-            return ErrorResponse::make($error);
-        }
-
-        return MetaResponse::make(['preferenceId' => $preferenceId]);
-    }
 }

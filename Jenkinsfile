@@ -28,6 +28,7 @@ pipeline {
                     env.DOCKER_REPOSITORY_HOST_CRED = "booking-${env.APP_ENV}-docker-repository-host"
                     env.DOCKER_REPOSITORY_USER_CRED = "booking-${env.APP_ENV}-docker-repository-user"
                     env.DOCKER_REPOSITORY_TOKEN_CRED = "booking-${env.APP_ENV}-docker-repository-token"
+                    env.MP_TEST_ACCESS_TOKEN_CRED = "booking-${env.APP_ENV}-mp-test-access-token"
                 }
             }
         }
@@ -44,6 +45,7 @@ pipeline {
                     string(credentialsId: "${CORS_ALLOWED_ORIGINS_CRED}", variable: 'CORS_ALLOWED_ORIGINS'),
                     string(credentialsId: "${DOCKER_REPOSITORY_HOST_CRED}", variable: 'DOCKER_REPOSITORY_HOST'),
                     string(credentialsId: "${DOCKER_REPOSITORY_USER_CRED}", variable: 'DOCKER_REPOSITORY_USER'),
+                    string(credentialsId: "${MP_TEST_ACCESS_TOKEN_CRED}", variable: 'MP_TEST_ACCESS_TOKEN'),
                 ]) {
                     sh '''#!/bin/bash
 
@@ -56,7 +58,7 @@ pipeline {
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
                         sed -i "s/SESSION_DOMAIN=.*/SESSION_DOMAIN=$SESSION_DOMAIN/g" .env
                         sed -i "s/SANCTUM_STATEFUL_DOMAINS=.*/SANCTUM_STATEFUL_DOMAINS=$SANCTUM_STATEFUL_DOMAINS/g" .env
-                        sed -i "s/CORS_ALLOWED_ORIGINS=.*/CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS/g" .env
+                        sed -i "s/MP_TEST_ACCESS_TOKEN=.*/MP_TEST_ACCESS_TOKEN=MP_TEST_ACCESS_TOKEN/g" .env
 
                         echo BUILD_VERSION=$BUILD_VERSION >> .env
                         echo DOCKER_REPOSITORY_HOST=$DOCKER_REPOSITORY_HOST >> .env
