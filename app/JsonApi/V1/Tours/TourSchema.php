@@ -50,7 +50,8 @@ class TourSchema extends Schema
             BelongsTo::make('tourCategory'),
             HasMany::make('events')->withFilters(
                 WhereEventDateFilter::make('events.date', 'events.date_time')
-            )
+            ),
+            HasMany::make('paymentMethods'),
         ];
     }
 

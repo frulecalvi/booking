@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\PaymentMethod;
 use App\Models\Price;
 use App\Models\Schedule;
 use App\Models\Tour;
@@ -57,8 +58,16 @@ class DatabaseSeeder extends Seeder
             ->for($category2)
             ->create(['state' => TourInactive::$name, 'end_date' => now()->addYear()]);
 
+        $createdPaymentMethods = PaymentMethod::factory(2)->create([
+            'secrets' => [
+                'access_token' => env('MP_TEST_ACCESS_TOKEN'),
+                'webhook_secret' => env('MP_TEST_ACCESS_TOKEN'),
+            ]
+        ]);
+
         foreach ($createdTours as $tours) {
             foreach ($tours as $tour) {
+                $tour->paymentMethods()->saveMany($createdPaymentMethods);
                 Price::factory(3)->for($tour, 'priceable')->create();
                 Schedule::factory(2)->for($tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'period' => 'weekly']);
             }

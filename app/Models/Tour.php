@@ -52,6 +52,11 @@ class Tour extends Model
         return $this->morphMany(Price::class, 'priceable');
     }
 
+    public function paymentMethods(): MorphToMany
+    {
+        return $this->morphToMany(PaymentMethod::class, 'payment_methodable');
+    }
+
     public function tourCategory(): BelongsTo
     {
         return $this->belongsTo(TourCategory::class);

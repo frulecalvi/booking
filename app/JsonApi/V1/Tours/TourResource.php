@@ -29,8 +29,8 @@ class TourResource extends JsonApiResource
             'capacity' => $this->resource->capacity,
             'endDate' => $this->resource->end_date,
             'state' => $this->resource->state,
-            'createdAt' => $this->resource->created_at,
-            'updatedAt' => $this->resource->updated_at,
+//            'createdAt' => $this->resource->created_at,
+//            'updatedAt' => $this->resource->updated_at,
         ];
     }
 
@@ -47,6 +47,7 @@ class TourResource extends JsonApiResource
             $this->relation('schedules'),
             $this->relation('events'),
             $this->relation('tourCategory'),
+            $this->relation('paymentMethods'),
         ];
     }
 
