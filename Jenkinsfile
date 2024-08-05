@@ -58,8 +58,8 @@ pipeline {
                         sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/g" .env
                         sed -i "s/SESSION_DOMAIN=.*/SESSION_DOMAIN=$SESSION_DOMAIN/g" .env
                         sed -i "s/SANCTUM_STATEFUL_DOMAINS=.*/SANCTUM_STATEFUL_DOMAINS=$SANCTUM_STATEFUL_DOMAINS/g" .env
-                        sed -i "s/MP_TEST_ACCESS_TOKEN=.*/MP_TEST_ACCESS_TOKEN=$MP_TEST_ACCESS_TOKEN/g" .env
 
+                        echo MP_TEST_ACCESS_TOKEN=$MP_TEST_ACCESS_TOKEN >> .env
                         echo BUILD_VERSION=$BUILD_VERSION >> .env
                         echo DOCKER_REPOSITORY_HOST=$DOCKER_REPOSITORY_HOST >> .env
                         echo DOCKER_REPOSITORY_USER=$DOCKER_REPOSITORY_USER >> .env
