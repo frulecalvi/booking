@@ -29,24 +29,27 @@ class PaymentMethodController extends Controller
     {
         $paymentMethod = $request->route('payment_method');
 
-//        dd($paymentMethod->secrets);
-        $mercadoPago->setConfig($paymentMethod->secrets['access_token']);
+        if ($paymentMethod->payment_method_type === 'mercadopago') {
+            $mercadoPago->setConfig($paymentMethod->secrets['access_token']);
 
-        $booking = Booking::findOrFail($request->query('bookingId'));
+            $booking = Booking::findOrFail($request->query('bookingId'));
 
-//        dd($payment);
+            try {
+                $preferenceId = $mercadoPago->createPreference($paymentMethod, $booking);
+            } catch (\Exception $exception) {
+                $error = [
+                    'status' => 500,
+                    'detail' => $exception->getMessage(),
+                ];
 
-        try {
-            $preferenceId = $mercadoPago->createPreference($paymentMethod, $booking);
-        } catch (\Exception $exception) {
-            $error = [
-                'status' => 500,
-                'detail' => $exception->getMessage(),
-            ];
+                return ErrorResponse::make($error);
+            }
 
-            return ErrorResponse::make($error);
+            $metaResponse = ['preferenceId' => $preferenceId];
         }
 
-        return MetaResponse::make(['preferenceId' => $preferenceId]);
+        $metaResponse = $metaResponse ?? ['Payment method type not found'];
+
+        return MetaResponse::make($metaResponse);
     }
 }

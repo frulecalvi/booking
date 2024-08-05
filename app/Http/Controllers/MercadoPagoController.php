@@ -31,8 +31,6 @@ class MercadoPagoController extends Controller
             abort(400, $e->getMessage());
         }
 
-
-
         response();
     }
 }

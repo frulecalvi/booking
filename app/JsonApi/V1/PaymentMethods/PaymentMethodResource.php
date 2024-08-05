@@ -23,7 +23,7 @@ class PaymentMethodResource extends JsonApiResource
         return [
             'name' => $this->resource->name,
             'payment_method_type' => $this->resource->payment_method_type,
-            'secrets' => $this->when($request->user()->hasRole('Admin'), $this->resource->secrets),
+            'secrets' => $this->when($request->user()?->hasRole('Admin'), $this->resource->secrets),
             'createdAt' => $this->resource->created_at,
             'updatedAt' => $this->resource->updated_at,
         ];

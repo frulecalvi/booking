@@ -269,7 +269,6 @@ class PaymentMethodTest extends TestCase
         );
     }
 
-
     public function test_calling_mercadopago_payment_method_prepare_payment_endpoint_returns_meta_with_preference_id()
     {
 //        $this->withoutExceptionHandling();
