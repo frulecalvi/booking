@@ -584,7 +584,7 @@ class BookingTest extends TestCase
         $response->assertErrorStatus(['status' => '401']);
     }
 
-    public function test_deleting_a_booking_is_forbidden_for_opertator_users()
+    public function test_deleting_a_booking_is_forbidden_for_operator_users()
     {
         $this->booking->save();
 
