@@ -511,34 +511,6 @@ class ScheduleTest extends TestCase
         $responseOnce->assertErrors(422, $expectedErrorsOnce);
     }
 
-    // public function test_creating_a_schedule_is_possible_only_if_the_scheduleables_s_end_date_is_in_the_future()
-    // {
-    //     $data = [
-    //         'type' => $this->resourceType,
-    //         'attributes' => $this->correctAttributes,
-    //         'relationships' => $this->correctRelationships
-    //     ];
-
-    //     $expectedError = [
-    //         "detail" => "The resource's end date is not valid.",
-    //         'source' => ['pointer' => "/data/relationships/product"],
-    //         'status' => '422',
-    //         "title" => "Unprocessable Entity"
-    //     ];
-
-    //     $response = $this
-    //         ->actingAs($this->adminUser)
-    //         ->jsonApi()
-    //         ->expects($this->resourceType)
-    //         ->withData($data)
-    //         ->includePaths(...array_keys($this->correctRelationships))
-    //         ->post(route('v1.schedules.store'));
-
-    //     // dd($response);
-
-    //     $response->assertError(422, $expectedError);
-    // }
-
     public function test_creating_a_once_schedule_creates_its_associated_event()
     {
         $this->withoutExceptionHandling();
@@ -635,7 +607,7 @@ class ScheduleTest extends TestCase
         $response->assertErrorStatus(['status' => '401']);
     }
 
-    public function test_deleting_a_schedule_is_forbidden_for_opertator_users()
+    public function test_deleting_a_schedule_is_forbidden_for_operator_users()
     {
         $createdSchedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => Active::$name]);
 
