@@ -21,12 +21,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::factory()->create([
-            'email' => 'test@test.com',
+        $operatorUser = User::factory()->create([
+            'email' => 'operatortest@test.com',
             'password' => 'test'
         ]);
+        $operatorUser->assignRole('Operator');
 
-        $user->assignRole('Operator');
+        $adminUser = User::factory()->create([
+            'email' => 'admintest@test.com',
+            'password' => 'test'
+        ]);
+        $adminUser->assignRole('Admin');
 
         $category1 = TourCategory::factory()->create();
         $category2 = TourCategory::factory()->create();
