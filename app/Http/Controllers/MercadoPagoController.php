@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\PaymentMethod;
 use App\Services\MercadoPago;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class MercadoPagoController extends Controller
 {
     public function webhook(Request $request, MercadoPago $mercadoPago)
     {
+        Log::info($request->getContent());
+
 //        dd($request->query('account'));
         if (! $paymentMethod = PaymentMethod::find($request->query('paymentMethodId')))
             abort(400);
