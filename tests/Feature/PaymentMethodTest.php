@@ -65,7 +65,7 @@ class PaymentMethodTest extends TestCase
 
         $this->correctAttributes = [
             'name' => 'Prueba',
-            'payment_method_type' => array_keys(config('payment_methods'))[array_rand(array_keys(config('payment_methods')))],
+            'paymentMethodType' => array_keys(config('payment_methods'))[array_rand(array_keys(config('payment_methods')))],
             'secrets' => [
                 'cred1' => '1',
                 'cred2' => '2',

@@ -32,7 +32,7 @@ class PaymentMethodSchema extends Schema
         return [
             ID::make()->ulid(),
             Str::make('name'),
-            Str::make('payment_method_type'),
+            Str::make('paymentMethodType'),
             ArrayHash::make('secrets'),
             DateTime::make('createdAt')->sortable()->readOnly(),
             DateTime::make('updatedAt')->sortable()->readOnly(),

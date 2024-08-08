@@ -18,7 +18,7 @@ class PaymentMethodRequest extends ResourceRequest
     {
         return [
             'name' => 'required|string|max:64',
-            'payment_method_type' => 'required|string|max:64',
+            'paymentMethodType' => 'required|string|max:64',
             'secrets' => 'array',
         ];
     }
