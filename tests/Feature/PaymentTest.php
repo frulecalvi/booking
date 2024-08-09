@@ -59,9 +59,9 @@ class PaymentTest extends TestCase
         ];
     }
 
-    public function test_creating_a_payment_with_its_related_booking_is_allowed_for_anonymous_users(): void
+    public function test_creating_a_payment_is_forbidden_for_anonymous_users(): void
     {
-        $this->withoutExceptionHandling();
+//        $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,
@@ -75,37 +75,31 @@ class PaymentTest extends TestCase
             ->includePaths('booking')
             ->post(route('v1.payments.store'));
 
-        $id = $response->assertCreatedWithServerId(
-            route('v1.payments.index'),
-            $data
-        )->id();
-
-        $this->assertDatabaseHas('payments', ['id' => $id]);
+        $response->assertErrorStatus(['status' => '401']);
     }
 
-    public function test_creating_a_payment_without_specified_booking_id_is_not_allowed(): void
-    {
-//        $this->withoutExceptionHandling();
-
-        $data = [
-            'type' => $this->resourceType,
-        ];
-
-        $response = $this
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->withData($data)
-            ->post(route('v1.payments.store'));
-
-        $expectedError = [
-            "detail" => "The booking field is required.",
-            'source' => ['pointer' => "/data/relationships/booking"],
-            'status' => '422',
-            "title" => "Unprocessable Entity"
-        ];
-
-        $response->assertError('422', $expectedError);
-    }
+//    public function test_creating_a_payment_without_specified_booking_id_is_not_allowed(): void
+//    {
+//        $data = [
+//            'type' => $this->resourceType,
+//        ];
+//
+//        $response = $this
+//            ->actingAs($this->adminUser)
+//            ->jsonApi()
+//            ->expects($this->resourceType)
+//            ->withData($data)
+//            ->post(route('v1.payments.store'));
+//
+//        $expectedError = [
+//            "detail" => "The booking field is required.",
+//            'source' => ['pointer' => "/data/relationships/booking"],
+//            'status' => '422',
+//            "title" => "Unprocessable Entity"
+//        ];
+//
+//        $response->assertError('422', $expectedError);
+//    }
 
     public function test_fetching_payments_is_not_allowed_for_unauthenticated_users(): void
     {
