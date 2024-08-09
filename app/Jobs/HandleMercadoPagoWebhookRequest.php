@@ -78,11 +78,11 @@ class HandleMercadoPagoWebhookRequest implements ShouldQueue
             return false;
         }
 
-        $bookingId = $mpPayment['metadata']['booking_id'];
+        $bookingId = $mpPayment->metadata->booking_id;
 
         if (
             isset($mpPayment)
-            && (! $bookingId || $mpPayment['metadata']['payment_method_id'] !== $paymentMethod->id)
+            && (! $bookingId || $mpPayment->metadata->payment_method_id !== $paymentMethod->id)
         ) {
             Log::error("MercadoPago webhook handler error: payment metadata inconsistency - mpPaymentId: {$this->dataId} - paymentMethodId: {$paymentMethod->id}");
             return false;

@@ -69,16 +69,16 @@ class MercadoPagoTest extends TestCase
         $xSignature = "ts={$ts},v1=" . hash_hmac('sha256', $manifest, $secret);
         $wrongXSignature = "ts={$ts},v1=a" . hash_hmac('sha256', $manifest, $secret);
 
-        $mock = $this->partialMock(MercadoPago::class, function (MockInterface $mock) use ($dataId) {
+        $mockPayment = new \stdClass();
+        $mockPayment->metadata = new \stdClass();
+        $mockPayment->metadata->booking_id = $this->booking->id;
+        $mockPayment->metadata->payment_method_id = $this->paymentMethod->id;
+
+        $mock = $this->partialMock(MercadoPago::class, function (MockInterface $mock) use ($dataId, $mockPayment) {
             $mock
                 ->shouldReceive('getPayment')
                 ->with($dataId)
-                ->andReturn([
-                    'metadata' => [
-                        'booking_id' => $this->booking->id,
-                        'payment_method_id' => $this->paymentMethod->id,
-                    ]
-                ])
+                ->andReturn($mockPayment)
                 ->once();
         });
 
