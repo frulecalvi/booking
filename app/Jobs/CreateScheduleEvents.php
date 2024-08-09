@@ -14,7 +14,7 @@ class CreateScheduleEvents implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $schedule;
+    protected Schedule $schedule;
 
     /**
      * Create a new job instance.
