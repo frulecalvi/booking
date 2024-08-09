@@ -36,7 +36,7 @@ class PaymentMethodTest extends TestCase
         $this->resourceType = 'payment-methods';
 
         $this->paymentMethods = [
-            'mercadopago1' => PaymentMethod::factory()->create([
+            'mercadopagoTest' => PaymentMethod::factory()->create([
                 'payment_method_type' => 'mercadopago',
                 'secrets' => [
                     'access_token' => env('MP_TEST_ACCESS_TOKEN'),
@@ -128,7 +128,7 @@ class PaymentMethodTest extends TestCase
         $response = $this
             ->jsonApi()
             ->expects($this->resourceType)
-            ->get(route('v1.payment-methods.show', $this->paymentMethods['mercadopago1']->getRouteKey()));
+            ->get(route('v1.payment-methods.show', $this->paymentMethods['mercadopagoTest']->getRouteKey()));
 
         // var_dump($response);
 
@@ -143,7 +143,7 @@ class PaymentMethodTest extends TestCase
             ->actingAs($this->operatorUser)
             ->jsonApi()
             ->expects($this->resourceType)
-            ->get(route('v1.payment-methods.show', $this->paymentMethods['mercadopago1']->getRouteKey()));
+            ->get(route('v1.payment-methods.show', $this->paymentMethods['mercadopagoTest']->getRouteKey()));
 
         // var_dump($response);
 
@@ -158,11 +158,11 @@ class PaymentMethodTest extends TestCase
             ->actingAs($this->adminUser)
             ->jsonApi()
             ->expects($this->resourceType)
-            ->get(route('v1.payment-methods.show', $this->paymentMethods['mercadopago1']->getRouteKey()));
+            ->get(route('v1.payment-methods.show', $this->paymentMethods['mercadopagoTest']->getRouteKey()));
 
         // var_dump($response);
 
-        $response->assertFetchedOne($this->paymentMethods['mercadopago1']);
+        $response->assertFetchedOne($this->paymentMethods['mercadopagoTest']);
     }
 
     public function test_creating_a_payment_method_is_forbidden_for_anonymous_users()
@@ -292,7 +292,7 @@ class PaymentMethodTest extends TestCase
             ->post(
                 route(
                     'v1.payment-methods.preparePayment',
-                    [$this->paymentMethods['mercadopago1'], 'bookingId' => $this->booking->id]
+                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id]
                 )
             );
 
@@ -301,7 +301,7 @@ class PaymentMethodTest extends TestCase
 
 //        dd($response);
 
-        $this->mercadoPago->setConfig($this->paymentMethods['mercadopago1']->secrets['access_token']);
+        $this->mercadoPago->setConfig($this->paymentMethods['mercadopagoTest']->secrets['access_token']);
         $preference = $this->mercadoPago->getPreference($preferenceId);
 
         $this->assertEquals(200, $preference->getStatusCode());
@@ -313,9 +313,9 @@ class PaymentMethodTest extends TestCase
         $response->assertExactMetaWithoutData($expectedMeta);
     }
 
-    public function test_calling_mercadopago_payment_method_prepare_payment_endpoint_creates_preference_with_correct_ext_ref_and_one_item_with_correct_amount()
+    public function test_calling_mercadopago_payment_method_prepare_payment_endpoint_creates_preference_with_correct_attributes()
     {
-        $this->withoutExceptionHandling();
+//        $this->withoutExceptionHandling();
 
         $this->booking->save();
         $prices = Price::factory(3)
@@ -340,23 +340,28 @@ class PaymentMethodTest extends TestCase
             ->post(
                 route(
                     'v1.payment-methods.preparePayment',
-                    [$this->paymentMethods['mercadopago1'], 'bookingId' => $this->booking->id],
+                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id],
                 )
             );
 
-//        dd($response);
+//        dd($response->getContent());
+
         $preferenceId = $response->json('meta.preferenceId');
 
-        $this->mercadoPago->setConfig($this->paymentMethods['mercadopago1']->secrets['access_token']);
-        $preference = $this->mercadoPago->getPreference($preferenceId);
+        $this->mercadoPago->setConfig($this->paymentMethods['mercadopagoTest']->secrets['access_token']);
+        $preference = $this->mercadoPago->getPreference($preferenceId)->getContent();
 
-//        dd($preference->getContent());
+        $this->assertEquals($this->booking->id, $preference['metadata']['bookingId']);
+        $this->assertEquals($this->paymentMethods['mercadopagoTest']->id, $preference['metadata']['paymentMethodId']);
+        $this->assertCount(count($this->booking->tickets), $preference['items']);
 
-        $this->assertEquals($this->booking->id, $preference->getContent()['metadata']['bookingId']);
-        $this->assertEquals($this->paymentMethods['mercadopago1']->id, $preference->getContent()['metadata']['paymentMethodId']);
-        $this->assertEquals(1, count($preference->getContent()['items']));
-        $this->assertEquals(roundPrice($totalPrice), $preference->getContent()['items'][0]['unit_price']);
+        foreach ($preference['items'] as $item) {
+            $ticket = Ticket::find($item['id']);
+            $price = $ticket->price;
+//            dd($price);
 
-//        dd($preference->getContent());
+            $this->assertEquals($ticket->quantity, $item['quantity']);
+            $this->assertEquals($price->amount, $item['unit_price']);
+        }
     }
 }

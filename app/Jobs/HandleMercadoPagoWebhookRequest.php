@@ -21,22 +21,18 @@ class HandleMercadoPagoWebhookRequest implements ShouldQueue
     protected string $xRequestId;
     protected string $xSignature;
     protected string $dataId;
-    protected string $paymentMethodId;
+    protected PaymentMethod $paymentMethod;
 
     /**
      * Create a new job instance.
      */
     public function __construct(
-        string $xRequestId,
-        string $xSignature,
         string $dataId,
-        string $paymentMethodId
+        PaymentMethod $paymentMethod
     )
     {
-        $this->xRequestId = $xRequestId;
-        $this->xSignature = $xSignature;
         $this->dataId = $dataId;
-        $this->paymentMethodId = $paymentMethodId;
+        $this->paymentMethod = $paymentMethod;
     }
 
     /**
@@ -44,30 +40,7 @@ class HandleMercadoPagoWebhookRequest implements ShouldQueue
      */
     public function handle(MercadoPago $mercadoPago): bool
     {
-        if (! $paymentMethod = PaymentMethod::find($this->paymentMethodId)) {
-            Log::error("MercadoPago webhook handler error: payment method not found - mpPaymentId: {$this->dataId} - paymentMethodId: {$this->paymentMethodId}");
-            return false;
-        }
-
-        $webhookSecret = $paymentMethod->secrets['webhook_secret'];
-        $accessToken = $paymentMethod->secrets['access_token'];
-
-        if (! $webhookSecret || ! $accessToken) {
-            Log::error("MercadoPago webhook handler error: secrets not set - mpPaymentId: {$this->dataId} - paymentMethodId: {$this->paymentMethod->id}");
-            return false;
-        }
-
-        try {
-            $webhookValidation = $mercadoPago->validateWebhookNotification(
-                webhookSecret: $webhookSecret,
-                xRequestId: $this->xRequestId,
-                xSignature: $this->xSignature,
-                dataId: $this->dataId,
-            );
-        } catch (BadRequestException $e) {
-            Log::error("MercadoPago webhook handler error: validation error - mpPaymentId: {$this->dataId} - paymentMethodId: {$paymentMethod->id}");
-            return false;
-        }
+        $accessToken = $this->paymentMethod->secrets['access_token'];
 
         $mercadoPago->setConfig($accessToken);
 
@@ -82,14 +55,14 @@ class HandleMercadoPagoWebhookRequest implements ShouldQueue
 
         if (
             isset($mpPayment)
-            && (! $bookingId || $mpPayment->metadata->payment_method_id !== $paymentMethod->id)
+            && (! $bookingId || $mpPayment->metadata->payment_method_id !== $this->paymentMethod->id)
         ) {
-            Log::error("MercadoPago webhook handler error: payment metadata inconsistency - mpPaymentId: {$this->dataId} - paymentMethodId: {$paymentMethod->id}");
+            Log::error("MercadoPago webhook handler error: payment metadata inconsistency - mpPaymentId: {$this->dataId} - paymentMethodId: {$this->paymentMethod->id}");
             return false;
         }
 
         if (! $booking = Booking::findOrFail($bookingId)) {
-            Log::error("MercadoPago webhook handler error: booking not found - mpPaymentId: {$this->dataId} - bookingId: {$bookingId} - paymentMethodId: {$paymentMethod->id}");
+            Log::error("MercadoPago webhook handler error: booking not found - mpPaymentId: {$this->dataId} - bookingId: {$bookingId} - paymentMethodId: {$this->paymentMethod->id}");
             return false;
         }
 

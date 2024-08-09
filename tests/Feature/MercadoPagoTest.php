@@ -83,17 +83,32 @@ class MercadoPagoTest extends TestCase
         $this->assertNotEquals(405, $response->status());
     }
 
-    public function test_mercadopago_webhook_endpoint_responds_200_and_dispatches_handle_job_when_request_is_complete(): void
+    public function test_mercadopago_webhook_endpoint_responds_200_and_dispatches_job_handler_only_when_request_is_valid(): void
     {
-//        $this->withoutExceptionHandling();
         Queue::fake();
 
-//        dd($secret);
+        $secret = $this->paymentMethod->secrets['webhook_secret'];
         $dataId = 'some-fake-id';
         $xRequestId = 'some-request-id';
-        $xSignature = "x-signature";
+        $ts = round(microtime(true));
+        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
+        $xSignature = "ts={$ts},v1=" . hash_hmac('sha256', $manifest, $secret);
+        $wrongXSignature = "ts={$ts},v1=a" . hash_hmac('sha256', $manifest, $secret);
 
-        $response = $this
+        $notValidResponse = $this
+            ->withHeaders([
+                'x-request-id' => $xRequestId,
+                'x-signature' => $wrongXSignature,
+            ])
+            ->postJson(route('mercadopagoWebhook', [
+                'paymentMethodId' => $this->paymentMethod->id,
+                'data.id' => $dataId,
+            ]));
+
+        $notValidResponse->assertStatus(400);
+        Queue::assertNotPushed(HandleMercadoPagoWebhookRequest::class);
+
+        $validResponse = $this
             ->withHeaders([
                 'x-request-id' => $xRequestId,
                 'x-signature' => $xSignature,
@@ -103,8 +118,7 @@ class MercadoPagoTest extends TestCase
                 'data.id' => $dataId,
             ]));
 
-        $response->assertStatus(200);
-
+        $validResponse->assertStatus(200);
         Queue::assertPushed(HandleMercadoPagoWebhookRequest::class);
     }
 }

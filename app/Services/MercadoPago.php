@@ -50,17 +50,22 @@ class MercadoPago
 
         $totalPrice = $this->bookingService->calculateTotalPrice($booking);
 
-//        dd($totalPrice);
+        $items = [];
+
+        foreach ($booking->tickets as $ticket) {
+            $items[] = [
+                'id' => $ticket->id,
+                'title' => "{$booking->bookingable->name} - {$ticket->price->name}",
+                'quantity' => $ticket->quantity,
+                'unit_price' => floatval($ticket->price->amount),
+            ];
+        }
+
+//        dd($items);
 
         try {
             $preference = $this->preferenceClient->create([
-                "items" => [
-                    [
-                        "title" => "Mi producto",
-                        "quantity" => 1,
-                        "unit_price" => $totalPrice,
-                    ],
-                ],
+                "items" => $items,
                 "metadata" => [
                     'bookingId' => $booking->id,
                     'paymentMethodId' => $paymentMethod->id,

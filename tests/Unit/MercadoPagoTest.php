@@ -59,15 +59,9 @@ class MercadoPagoTest extends TestCase
             ]);
     }
 
-    public function test_mercadopago_webhook_handler_dispatches_payment_creation_only_when_valid_request(): void
+    public function test_mercadopago_webhook_handler_dispatches_payment_creation(): void
     {
-        $secret = $this->paymentMethod->secrets['webhook_secret'];
         $dataId = 'some-fake-id';
-        $ts = round(microtime(true));
-        $xRequestId = 'some-request-id';
-        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
-        $xSignature = "ts={$ts},v1=" . hash_hmac('sha256', $manifest, $secret);
-        $wrongXSignature = "ts={$ts},v1=a" . hash_hmac('sha256', $manifest, $secret);
 
         $mockPayment = new \stdClass();
         $mockPayment->metadata = new \stdClass();
@@ -83,19 +77,8 @@ class MercadoPagoTest extends TestCase
         });
 
         HandleMercadoPagoWebhookRequest::dispatch(
-            $xRequestId,
-            $wrongXSignature,
             $dataId,
-            $this->paymentMethod->id
-        );
-
-        $this->assertDatabaseCount('payments', 0);
-
-        HandleMercadoPagoWebhookRequest::dispatch(
-            $xRequestId,
-            $xSignature,
-            $dataId,
-            $this->paymentMethod->id
+            $this->paymentMethod
         );
 
         $this->assertDatabaseHas('payments', ['booking_id' => $this->booking->id]);
