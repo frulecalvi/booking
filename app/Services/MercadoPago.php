@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use MercadoPago\Client\Payment\PaymentClient;
 use MercadoPago\Exceptions\MPApiException;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
@@ -14,21 +15,16 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class MercadoPago
 {
-    protected PreferenceClient $client;
+    protected PreferenceClient $preferenceClient;
+    protected PaymentClient $paymentClient;
     protected BookingService $bookingService;
-
-//    public function __construct()
-//    {
-//        MercadoPagoConfig::setAccessToken(config('mercadopago.access_token'));
-//        $this->client = new PreferenceClient();
-//        $this->bookingService = new BookingService();
-//    }
 
     public function setConfig(string $accessToken)
     {
 //        dd($accessToken);
         MercadoPagoConfig::setAccessToken($accessToken);
-        $this->client = new PreferenceClient();
+        $this->preferenceClient = new PreferenceClient();
+        $this->paymentClient = new PaymentClient();
     }
 
     /**
@@ -37,7 +33,7 @@ class MercadoPago
     public function getPreference(string $preferenceId)
     {
         try {
-            $preference = $this->client->get($preferenceId);
+            $preference = $this->preferenceClient->get($preferenceId);
         } catch (MPApiException $e) {
             return $e;
         }
@@ -57,7 +53,7 @@ class MercadoPago
 //        dd($totalPrice);
 
         try {
-            $preference = $this->client->create([
+            $preference = $this->preferenceClient->create([
                 "items" => [
                     [
                         "title" => "Mi producto",
@@ -109,5 +105,16 @@ class MercadoPago
         }
 
         return true;
+    }
+
+    public function getPayment(string $paymentId)
+    {
+        try {
+            $payment = $this->paymentClient->get($paymentId);
+        } catch (MPApiException $e) {
+            throw new BadRequestException($e->getMessage());
+        }
+
+        return $payment;
     }
 }
