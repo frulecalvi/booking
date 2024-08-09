@@ -82,7 +82,7 @@ class MercadoPagoTest extends TestCase
         $dataId = 'some-fake-id';
         $ts = round(microtime(true));
         $xRequestId = 'some-request-id';
-        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts}";
+        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
         $xSignature = "ts={$ts},v1=" . hash_hmac('sha256', $manifest, $secret);
 
         $response = $this

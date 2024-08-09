@@ -100,7 +100,7 @@ class MercadoPago
         if (! isset($ts) || ! isset($hash))
             throw new BadRequestException('x-signature header is not valid');
 
-        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts}";
+        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
 
         $sha = hash_hmac('sha256', $manifest, $webhookSecret);
 
