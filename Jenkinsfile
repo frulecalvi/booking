@@ -77,6 +77,7 @@ pipeline {
                     string(credentialsId: "${DOCKER_REPOSITORY_HOST_CRED}", variable: 'DOCKER_REPOSITORY_HOST'),
                     string(credentialsId: "${DOCKER_REPOSITORY_USER_CRED}", variable: 'DOCKER_REPOSITORY_USER'),
                 ]) {
+                    sh 'docker run $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION php ./vendor/phpunit/phpunit/phpunit tests/Unit'
                     sh 'docker run $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-app:$BUILD_VERSION php ./vendor/phpunit/phpunit/phpunit tests/Feature'
                 }
             }
