@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
         $createdPaymentMethods = PaymentMethod::factory(2)->create([
             'secrets' => [
                 'access_token' => env('MP_TEST_ACCESS_TOKEN'),
-                'webhook_secret' => env('MP_TEST_ACCESS_TOKEN'),
+                'webhook_secret' => 'secret',
             ]
         ]);
 
