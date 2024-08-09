@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\MercadoPago;
 use Illuminate\Http\Request;
+use LaravelJsonApi\Core\Document\Error;
 use LaravelJsonApi\Core\Responses\DataResponse;
 use LaravelJsonApi\Core\Responses\ErrorResponse;
 use LaravelJsonApi\Core\Responses\MetaResponse;
@@ -37,10 +38,10 @@ class PaymentMethodController extends Controller
             try {
                 $preferenceId = $mercadoPago->createPreference($paymentMethod, $booking);
             } catch (\Exception $exception) {
-                $error = [
+                $error = Error::fromArray([
                     'status' => 500,
                     'detail' => $exception->getMessage(),
-                ];
+                ]);
 
                 return ErrorResponse::make($error);
             }
