@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit;
 
+use App\Jobs\CreatePayment;
 use App\Jobs\HandleMercadoPagoWebhookRequest;
 use App\Models\Booking;
 use App\Models\Event;
-use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Schedule;
 use App\Models\Tour;
@@ -13,9 +13,9 @@ use App\Services\MercadoPago;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
-use MercadoPago\Client\Preference\PreferenceClient;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class MercadoPagoTest extends TestCase
@@ -57,54 +57,47 @@ class MercadoPagoTest extends TestCase
                     'webhook_secret' => 'some_fake_webhook_secret',
                 ]
             ]);
-
-        $this->correctRelationships = [
-            'booking' => [
-                'data' => [
-                    'type' => 'bookings',
-                    'id' => $this->booking->id,
-                ],
-            ],
-        ];
     }
 
-//    public function test_mercadopago_create_preference_returns_meta_data_with_preference_id()
-//    {
-//
-//    }
-
-    public function test_mercadopago_webhook_endpoint_is_defined()
+    public function test_mercadopago_webhook_handler_dispatches_payment_creation_only_when_valid_request(): void
     {
-        $response = $this->postJson(route('mercadopagoWebhook'));
-
-//        dd($response);
-
-        $this->assertNotEquals(404, $response->status());
-        $this->assertNotEquals(405, $response->status());
-    }
-
-    public function test_mercadopago_webhook_endpoint_responds_200_and_dispatches_handle_job_when_request_is_complete(): void
-    {
-//        $this->withoutExceptionHandling();
-        Queue::fake();
-
-//        dd($secret);
+        $secret = $this->paymentMethod->secrets['webhook_secret'];
         $dataId = 'some-fake-id';
+        $ts = round(microtime(true));
         $xRequestId = 'some-request-id';
-        $xSignature = "x-signature";
+        $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
+        $xSignature = "ts={$ts},v1=" . hash_hmac('sha256', $manifest, $secret);
+        $wrongXSignature = "ts={$ts},v1=a" . hash_hmac('sha256', $manifest, $secret);
 
-        $response = $this
-            ->withHeaders([
-                'x-request-id' => $xRequestId,
-                'x-signature' => $xSignature,
-            ])
-            ->postJson(route('mercadopagoWebhook', [
-                'paymentMethodId' => $this->paymentMethod->id,
-                'data.id' => $dataId,
-            ]));
+        $mock = $this->partialMock(MercadoPago::class, function (MockInterface $mock) use ($dataId) {
+            $mock
+                ->shouldReceive('getPayment')
+                ->with($dataId)
+                ->andReturn([
+                    'metadata' => [
+                        'booking_id' => $this->booking->id,
+                        'payment_method_id' => $this->paymentMethod->id,
+                    ]
+                ])
+                ->once();
+        });
 
-        $response->assertStatus(200);
+        HandleMercadoPagoWebhookRequest::dispatch(
+            $xRequestId,
+            $wrongXSignature,
+            $dataId,
+            $this->paymentMethod->id
+        );
 
-        Queue::assertPushed(HandleMercadoPagoWebhookRequest::class);
+        $this->assertDatabaseCount('payments', 0);
+
+        HandleMercadoPagoWebhookRequest::dispatch(
+            $xRequestId,
+            $xSignature,
+            $dataId,
+            $this->paymentMethod->id
+        );
+
+        $this->assertDatabaseHas('payments', ['booking_id' => $this->booking->id]);
     }
 }

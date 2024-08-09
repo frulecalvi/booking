@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\HandleMercadoPagoWebhookRequest;
 use App\Models\Booking;
 use App\Models\PaymentMethod;
 use App\Services\MercadoPago;
@@ -24,54 +25,13 @@ class MercadoPagoController extends Controller
             abort(400);
         }
 
-        if (! $paymentMethod = PaymentMethod::find($request->query('paymentMethodId'))) {
-            Log::error("MercadoPago webhook error: payment method not found - paymentId: {$dataId} - paymentMethodId: {$request->query('paymentMethodId')}");
-            abort(400);
-        }
+        HandleMercadoPagoWebhookRequest::dispatch(
+            $xRequestId,
+            $xSignature,
+            $dataId,
+            $request->query('paymentMethodId')
+        );
 
-        if (
-            ! $webhookSecret = $paymentMethod->secrets['webhook_secret']
-            || ! $accessToken = $paymentMethod->secrets['access_token']
-        ) {
-            Log::error("MercadoPago webhook error: webhook secret not set - paymentId: {$dataId} - paymentMethodId: {$paymentMethod->id}");
-            abort(400);
-        }
-
-        try {
-            $webhookValidation = $mercadoPago->validateWebhookNotification(
-                webhookSecret: $webhookSecret,
-                xRequestId: $xRequestId,
-                xSignature: $xSignature,
-                dataId: $dataId,
-            );
-        } catch (BadRequestException $e) {
-            Log::error("MercadoPago webhook error: validation error - paymentId: {$dataId} - paymentMethodId: {$paymentMethod->id}");
-            abort(400, $e->getMessage());
-        }
-
-        $mercadoPago->setConfig($accessToken);
-
-        try {
-            $mpPayment = $mercadoPago->getPayment($dataId);
-        } catch (BadRequestException $e) {
-            Log::error("MercadoPago webhook error: {$e->getMessage()} - paymentId: {$dataId}");
-            abort(400);
-        }
-
-        if (
-            isset($mpPayment) && (
-                ! $bookingId = $mpPayment['metadata']['booking_id']
-                || ! $mpPayment['metadata']['payment_method_id'] !== $paymentMethod->id
-            )
-        ) {
-            Log::error("MercadoPago webhook error: payment metadata inconsistency - paymentId: {$dataId}");
-            abort(400);
-        }
-
-        $booking = Booking::findOrFail($bookingId);
-
-        Log::info($booking->id);
-
-        response();
+        return response(200);
     }
 }

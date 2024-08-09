@@ -107,10 +107,10 @@ class MercadoPago
         return true;
     }
 
-    public function getPayment(string $paymentId)
+    public function getPayment(int|string $paymentId)
     {
         try {
-            $payment = $this->paymentClient->get($paymentId);
+            $payment = $this->paymentClient->get((int) $paymentId);
         } catch (MPApiException $e) {
             throw new BadRequestException($e->getMessage());
         }
