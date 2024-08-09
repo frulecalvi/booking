@@ -46,4 +46,9 @@ class Booking extends Model
     {
         return $this->morphTo();
     }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }
