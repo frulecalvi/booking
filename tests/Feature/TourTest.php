@@ -64,6 +64,7 @@ class TourTest extends TestCase
             'meetingPoint' => $this->tours[Active::$name][0]->meeting_point,
             'capacity' => $this->tours[Active::$name][0]->capacity,
             'minimum_payment_quantity' => $this->tours[Active::$name][0]->minimum_payment_quantity,
+            'bookings_impact_availability' => $this->tours[Active::$name][0]->bookings_impact_availability,
             'endDate' => $this->tours[Active::$name][0]->end_date,
             'state' => Inactive::$name
         ];
@@ -310,7 +311,7 @@ class TourTest extends TestCase
         $response->assertErrorStatus(['status' => '401']);
     }
 
-    public function test_deleting_a_schedule_is_forbidden_for_opertator_users()
+    public function test_deleting_a_schedule_is_forbidden_for_operator_users()
     {
         $tour = Tour::factory()->create(['state' => Active::$name]);
 

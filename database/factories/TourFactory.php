@@ -25,6 +25,7 @@ class TourFactory extends Factory
             'end_date' => $this->faker->date(),
             'capacity' => $this->faker->randomNumber(2),
             'minimum_payment_quantity' => $this->faker->randomNumber(2),
+            'bookings_impact_availability' => true,
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\JsonApi\V1\Tours;
 use App\JsonApi\Filters\WhereEventDateFilter;
 use App\Models\Tour;
 use LaravelJsonApi\Eloquent\Contracts\Paginator;
+use LaravelJsonApi\Eloquent\Fields\Boolean;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
 use LaravelJsonApi\Eloquent\Fields\ID;
 use LaravelJsonApi\Eloquent\Fields\Relations\BelongsTo;
@@ -43,6 +44,7 @@ class TourSchema extends Schema
             Str::make('meetingPoint'),
             Number::make('capacity'),
             Number::make('minimum_payment_quantity'),
+            Boolean::make('bookings_impact_availability'),
             Str::make('endDate'),
             Str::make('state'),
             DateTime::make('createdAt')->sortable()->readOnly(),

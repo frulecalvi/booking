@@ -80,28 +80,35 @@ class Event extends Model
     public function availability(): array
     {
         $totalAvailability = $this->eventable->capacity;
+
         $productPrices = $this->eventable->prices;
 
-        // dd($productPrices);
         $pricesAvailability = [];
 
-        $totalBookings = 0;
-
-        foreach ($productPrices as $price) {            
-            $priceTickets = $this->tickets->where('price_id', '=', $price->id);
-
-            $priceBookings = 0;
-            foreach ($priceTickets as $currentTicket) {
-                $priceBookings += $currentTicket->quantity;
-                $totalBookings += $currentTicket->quantity;
-            }
-
-            $pricesAvailability[$price->id] = $price->capacity === 0 ?
-                0
-                : $price->capacity - $priceBookings;
+        foreach ($productPrices as $price) {
+            $pricesAvailability[$price->id] = $price->capacity;
         }
 
-        $totalAvailability -= $totalBookings;
+        if ($this->eventable->bookings_impact_availability) {
+
+            $totalBookings = 0;
+
+            foreach ($productPrices as $price) {
+                $priceTickets = $this->tickets->where('price_id', '=', $price->id);
+
+                $priceBookings = 0;
+                foreach ($priceTickets as $currentTicket) {
+                    $priceBookings += $currentTicket->quantity;
+                    $totalBookings += $currentTicket->quantity;
+                }
+
+                $pricesAvailability[$price->id] = $price->capacity === 0 ?
+                    0
+                    : $price->capacity - $priceBookings;
+            }
+
+            $totalAvailability -= $totalBookings;
+        }
 
         foreach ($pricesAvailability as $priceId => $quantity) {
             if ($quantity > $totalAvailability)

@@ -32,11 +32,13 @@ class Tour extends Model
         'meeting_point',
         'capacity',
         'minimum_payment_quantity',
+        'bookings_impact_availability',
         'end_date'
     ];
 
     protected $casts = [
-        'state' => TourState::class
+        'state' => TourState::class,
+        'bookings_impact_availability' => 'boolean',
     ];
 
     public function schedules(): MorphMany

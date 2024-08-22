@@ -26,6 +26,7 @@ class TourRequest extends ResourceRequest
             'meetingPoint' => 'required|string|max:128',
             'capacity' => 'required|integer',
             'minimum_payment_quantity' => 'required|integer',
+            'bookings_impact_availability' => 'required|boolean',
             'endDate' => 'required|date_format:Y-m-d',
             'state' => ValidStateRule::make(TourState::class)
         ];

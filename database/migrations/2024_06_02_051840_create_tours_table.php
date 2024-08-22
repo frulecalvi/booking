@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->integer('capacity');
             $table->integer('minimum_payment_quantity');
+            $table->boolean('bookings_impact_availability');
             $table->string('state');
             $table->timestamps();
             $table->softDeletes();

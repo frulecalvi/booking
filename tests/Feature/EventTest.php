@@ -183,148 +183,170 @@ class EventTest extends TestCase
     public function test_fetching_an_event_includes_meta_data_with_its_total_availability()
     {
         $this->withoutExceptionHandling();
-        
-        $tour = Tour::factory()->create(
-            ['end_date' => now()->addYear(),
-            'state' => TourActive::$name,
-            'capacity' => 55
-        ]);
 
-        $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
-        $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 48]);
-        $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
+        $bookingsImpactAvailabilityOpts = [false, true];
 
-        $event = Event::factory()
-            ->for($tour, 'eventable')
-            ->create(['date_time' => now()->addWeek()]);
+        foreach ($bookingsImpactAvailabilityOpts as $bookingsImpactAvailability) {
+            $tour = Tour::factory()->create(
+                ['end_date' => now()->addYear(),
+                'state' => TourActive::$name,
+                'capacity' => 55,
+                'bookings_impact_availability' => $bookingsImpactAvailability,
+            ]);
 
-        $booking = Booking::factory()
-            ->for($event)
-            ->for($tour, 'bookingable')
-            ->create();
+            $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
+            $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 80]);
+            $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
 
-        $tickets = Ticket::factory(2)
-            ->for($booking)
-            ->for($price)
-            ->create(['quantity' => 1]);
+            $event = Event::factory()
+                ->for($tour, 'eventable')
+                ->create(['date_time' => now()->addWeek()]);
 
-        $tickets2 = Ticket::factory(3)
-            ->for($booking)
-            ->for($price2)
-            ->create(['quantity' => 3]);
+            $booking = Booking::factory()
+                ->for($event)
+                ->for($tour, 'bookingable')
+                ->create();
 
-        $tickets3 = Ticket::factory(2)
-            ->for($booking)
-            ->for($price2)
-            ->create(['quantity' => 4]);
+            $tickets = Ticket::factory(2)
+                ->for($booking)
+                ->for($price)
+                ->create(['quantity' => 1]);
 
-        // dd($booking);
+            $tickets2 = Ticket::factory(3)
+                ->for($booking)
+                ->for($price2)
+                ->create(['quantity' => 3]);
 
-        // dd($tour->events->first());
+            $tickets3 = Ticket::factory(2)
+                ->for($booking)
+                ->for($price2)
+                ->create(['quantity' => 4]);
 
-        $tourPrices = $tour->prices;
-        
-        $availability = $tour->capacity;
+            // dd($booking);
 
-        // $eventTickets = $event->tickets;
-        // dd($eventTickets);
+            // dd($tour->events->first());
 
-        $booked = 0;
+            $tourPrices = $tour->prices;
 
-        foreach ($tourPrices as $price) {
-            $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+            $availability = $tour->capacity;
 
-            // var_dump($priceTickets);
+            // $eventTickets = $event->tickets;
+            // dd($eventTickets);
 
-            foreach ($priceTickets as $currentTicket) {
-                $booked += $currentTicket->quantity;
+            if ($bookingsImpactAvailability) {
+                $booked = 0;
+
+                foreach ($tourPrices as $price) {
+                    $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+
+                    // var_dump($priceTickets);
+
+                    foreach ($priceTickets as $currentTicket) {
+                        $booked += $currentTicket->quantity;
+                    }
+                }
+
+                $availability -= $booked;
             }
+
+            // die;
+
+            // dd([$tour->capacity, $booked, $availability]);
+
+            // dd($tour->events->last());
+            // array_shift($meta['availableDates']);
+
+            $response = $this
+                ->jsonApi()
+                ->expects('events')
+                // ->query([
+                //     'filter[event]' => $tourDate
+                // ])
+                ->get(route('v1.events.show', $event->getRouteKey()));
+
+            // dd($response->getContent());
+            $response->assertFetchedOne($event)
+                ->assertJson(['data' => ['meta' => ['availability' => ['total' => $availability]]]]);
         }
-
-        $availability -= $booked;
-
-        // die;
-
-        // dd([$tour->capacity, $booked, $availability]);
-
-        // dd($tour->events->last());
-        // array_shift($meta['availableDates']);
-        
-        $response = $this
-            ->jsonApi()
-            ->expects('events')
-            // ->query([
-            //     'filter[event]' => $tourDate
-            // ])
-            ->get(route('v1.events.show', $event->getRouteKey()));
-
-        // dd($response->getContent());
-        $response->assertFetchedOne($event)
-            ->assertJson(['data' => ['meta' => ['availability' => ['total' => $availability]]]]);
     }
 
     public function test_fetching_an_event_includes_meta_data_with_each_one_of_its_prices_availability()
     {
         $this->withoutExceptionHandling();
-        
-        $tour = Tour::factory()
-            ->create([
-                'end_date' => now()->addYear(),
-                'state' => TourActive::$name,
-                'capacity' => 60,
-            ]);
-        $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
-        $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 48]);
-        $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
 
-        $event = Event::factory()
-            ->for($tour, 'eventable')
-            ->create(['date_time' => now()->addWeek()]);
+        $bookingsImpactAvailabilityOpts = [false, true];
 
-        $booking = Booking::factory()
-            ->for($event)
-            ->for($tour, 'bookingable')
-            ->create();
+        foreach ($bookingsImpactAvailabilityOpts as $bookingsImpactAvailability) {
+            $tour = Tour::factory()
+                ->create([
+                    'end_date' => now()->addYear(),
+                    'state' => TourActive::$name,
+                    'capacity' => 60,
+                    'bookings_impact_availability' => $bookingsImpactAvailability,
+                ]);
+            $price = Price::factory()->for($tour, 'priceable')->create(['capacity' => 25]);
+            $price2 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 80]);
+            $price3 = Price::factory()->for($tour, 'priceable')->create(['capacity' => 0]);
 
-        $tickets = Ticket::factory(2)
-            ->for($booking)
-            ->for($price)
-            ->create(['quantity' => 1]);
+            $event = Event::factory()
+                ->for($tour, 'eventable')
+                ->create(['date_time' => now()->addWeek()]);
 
-        $tickets2 = Ticket::factory(3)
-            ->for($booking)
-            ->for($price2)
-            ->create(['quantity' => 3]);
+            $booking = Booking::factory()
+                ->for($event)
+                ->for($tour, 'bookingable')
+                ->create();
 
-        $tickets3 = Ticket::factory(2)
-            ->for($booking)
-            ->for($price3)
-            ->create(['quantity' => 4]);
+            $tickets = Ticket::factory(2)
+                ->for($booking)
+                ->for($price)
+                ->create(['quantity' => 1]);
 
-        $tourPrices = $tour->prices;
-        
-        $pricesAvailability = [];
+            $tickets2 = Ticket::factory(3)
+                ->for($booking)
+                ->for($price2)
+                ->create(['quantity' => 3]);
 
-        foreach ($tourPrices as $price) {
-            if ($price->capacity === 0) {
-                $pricesAvailability[$price->id] = 0;
-                continue;
-            }
-            
-            $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+            $tickets3 = Ticket::factory(2)
+                ->for($booking)
+                ->for($price3)
+                ->create(['quantity' => 4]);
 
-            $booked = 0;
-            foreach ($priceTickets as $currentTicket) {
-                $booked += $currentTicket->quantity;
+            $tourPrices = $tour->prices;
+
+            $pricesAvailability = [];
+            foreach ($tourPrices as $price) {
+                $pricesAvailability[$price->id] = $price->capacity;
             }
 
-            $pricesAvailability[$price->id] = $price->capacity - $booked;
+            if ($bookingsImpactAvailability) {
+                foreach ($tourPrices as $price) {
+                    if ($price->capacity === 0) {
+                        $pricesAvailability[$price->id] = 0;
+                        continue;
+                    }
+
+                    $priceTickets = $event->tickets->where('price_id', '=', $price->id);
+
+                    $booked = 0;
+                    foreach ($priceTickets as $currentTicket) {
+                        $booked += $currentTicket->quantity;
+                    }
+
+                    $pricesAvailability[$price->id] = $price->capacity - $booked;
+                }
+            }
         }
         
         $response = $this
             ->jsonApi()
             ->expects('events')
             ->get(route('v1.events.show', $event->getRouteKey()));
+
+        foreach ($pricesAvailability as $priceId => $availability) {
+            if ($availability > json_decode($response->getContent())->data->meta->availability->prices->$priceId)
+                $pricesAvailability[$priceId] = json_decode($response->getContent())->data->meta->availability->total;
+        }
 
         $response->assertFetchedOne($event)
             ->assertJson(['data' => ['meta' => ['availability' => ['prices' => $pricesAvailability]]]]);

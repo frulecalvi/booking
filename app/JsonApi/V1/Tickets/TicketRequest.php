@@ -46,18 +46,20 @@ class TicketRequest extends ResourceRequest
                         // dd([$priceProduct, $bookingProduct]);
 
                         // dd([$validator->safe()->quantity, $booking->event->availability()['prices'][$price->id]]);
+
+                        $eventAvailability = $booking->event->availability();
                         
                         if ($priceProduct->id !== $bookingProduct->id) {
                             $validator->errors()->add(
                                 'booking',
                                 "The resource is not properly related."
                             );
-                        } elseif ($validator->safe()->quantity > $booking->event->availability()['total']) {
+                        } elseif ($validator->safe()->quantity > $eventAvailability['total']) {
                             $validator->errors()->add(
                                 'quantity',
                                 "The value of the quantity field cannot be higher than the total availability for the event."
                             );
-                        } elseif ($validator->safe()->quantity > $booking->event->availability()['prices'][$price->id]) {
+                        } elseif ($validator->safe()->quantity > $eventAvailability['prices'][$price->id]) {
                             $validator->errors()->add(
                                 'quantity',
                                 "The value of the quantity field cannot be higher than the price availability for the event."
