@@ -38,6 +38,7 @@ class TourSchema extends Schema
             ID::make()->ulid(),
             Str::make('name'),
             Str::make('description'),
+            Str::make('short_description'),
             Str::make('duration'),
             Str::make('meetingPoint'),
             Number::make('capacity'),

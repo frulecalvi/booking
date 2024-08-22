@@ -59,6 +59,7 @@ class TourTest extends TestCase
         $this->correctAttributes = [
             'name' => $this->tours[Active::$name][0]->name,
             'description' => $this->tours[Active::$name][0]->description,
+            'short_description' => $this->tours[Active::$name][0]->short_description,
             'duration' => $this->tours[Active::$name][0]->duration,
             'meetingPoint' => $this->tours[Active::$name][0]->meeting_point,
             'capacity' => $this->tours[Active::$name][0]->capacity,

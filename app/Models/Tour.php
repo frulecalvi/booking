@@ -27,6 +27,7 @@ class Tour extends Model
     protected $fillable = [
         'name',
         'description',
+        'short_description',
         'duration',
         'meeting_point',
         'capacity',

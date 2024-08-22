@@ -20,7 +20,8 @@ class TourRequest extends ResourceRequest
     {
         return [
             'name' => 'required|string|max:128',
-            'description' => 'required|string|max:512',
+            'description' => 'required|string|max:2048',
+            'short_description' => 'required|string|max:256',
             'duration' => 'required|date_format:H:i:s',
             'meetingPoint' => 'required|string|max:128',
             'capacity' => 'required|integer',

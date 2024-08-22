@@ -18,7 +18,8 @@ class TourFactory extends Factory
     {
         return [
             'name' => $this->faker->sentence,
-            'description' => $this->faker->text(256),
+            'description' => $this->faker->text(2048),
+            'short_description' => $this->faker->text(256),
             'duration' => $this->faker->time(),
             'meeting_point' => $this->faker->address(),
             'end_date' => $this->faker->date(),

@@ -15,7 +15,8 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('tour_category_id')->nullable();
             $table->string('name', 128);
-            $table->string('description', 512);
+            $table->string('description', 2048);
+            $table->string('short_description', 256);
             $table->time('duration');
             $table->string('meeting_point', 128);
             $table->date('end_date');

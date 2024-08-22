@@ -24,6 +24,7 @@ class TourResource extends JsonApiResource
         return [
             'name' => $this->resource->name,
             'description' => $this->resource->description,
+            'short_description' => $this->resource->short_description,
             'duration' => $this->resource->duration,
             'meetingPoint' => $this->resource->meeting_point,
             'capacity' => $this->resource->capacity,
