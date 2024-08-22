@@ -34,7 +34,7 @@ class BookingSchema extends Schema
         return [
             ID::make()->ulid(),
             Str::make('referenceCode'),
-            Str::make('contactName'),
+//            Str::make('contactName'),
             Str::make('contactEmail'),
             // DateTime::make('createdAt')->sortable()->readOnly(),
             // DateTime::make('updatedAt')->sortable()->readOnly(),

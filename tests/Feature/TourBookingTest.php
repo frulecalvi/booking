@@ -43,7 +43,7 @@ class TourBookingTest extends TestCase
         $this->booking = Booking::factory()->make();
 
         $this->correctAttributes = [
-            'contactName' => $this->booking->contact_name,
+//            'contactName' => $this->booking->contact_name,
             'contactEmail' => $this->booking->contact_email
         ];
 

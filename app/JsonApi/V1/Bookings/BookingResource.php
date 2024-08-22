@@ -22,7 +22,7 @@ class BookingResource extends JsonApiResource
     {
         return [
             'referenceCode' => $this->resource->reference_code,
-            'contactName' => $this->resource->contact_name,
+//            'contactName' => $this->resource->contact_name,
             'contactEmail' => $this->resource->contact_email,
             'state' => $this->resource->state,
             'createdAt' => $this->resource->created_at,

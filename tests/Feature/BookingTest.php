@@ -57,7 +57,7 @@ class BookingTest extends TestCase
 
         $this->requiredFields = [
             'attributes' => [
-                'contactName',
+//                'contactName',
                 'contactEmail'
             ],
             'relationships' => [
@@ -105,7 +105,7 @@ class BookingTest extends TestCase
         $this->superAdminUser->assignRole('Super Admin');
         
         $this->correctAttributes = [
-            'contactName' => $this->booking->contact_name,
+//            'contactName' => $this->booking->contact_name,
             'contactEmail' => $this->booking->contact_email
         ];
 
@@ -236,7 +236,7 @@ class BookingTest extends TestCase
         
         $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
-            'contact_name' => $this->booking->contact_name,
+//            'contact_name' => $this->booking->contact_name,
             'contact_email' => $this->booking->contact_email,
             'event_id' => $this->booking->event->id,
             'bookingable_id' => $this->tour->id,
@@ -277,7 +277,7 @@ class BookingTest extends TestCase
         
         $this->assertDatabaseHas($this->resourceType, [
             'id' => $id,
-            'contact_name' => $this->booking->contact_name,
+//            'contact_name' => $this->booking->contact_name,
             'contact_email' => $this->booking->contact_email,
             'event_id' => $this->booking->event->id,
             'bookingable_id' => $this->tour->id,

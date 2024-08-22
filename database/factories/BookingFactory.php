@@ -19,7 +19,7 @@ class BookingFactory extends Factory
     {
         return [
             // 'event_id' => Event::factory()->create(),
-            'contact_name' => $this->faker->name(),
+//            'contact_name' => $this->faker->name(),
             'contact_email' => $this->faker->email()
         ];
     }
