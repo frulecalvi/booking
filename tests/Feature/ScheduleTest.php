@@ -62,7 +62,7 @@ class ScheduleTest extends TestCase
 
         $this->acceptedPeriodValues = [
             'once',
-            // 'daily',
+            'daily',
             'weekly',
             // 'monthly',
         ];
@@ -546,6 +546,51 @@ class ScheduleTest extends TestCase
             'schedule_id' => $id,
             'date_time' => "{$this->correctAttributes['date']} {$this->correctAttributes['time']}",
         ]);
+    }
+
+    public function test_creating_a_daily_schedule_creates_all_its_associated_events()
+    {
+//        $this->withoutExceptionHandling();
+
+        $today = new DateTime();
+
+        $futureDate = $today->add(DateInterval::createFromDateString('365 days'))->format('Y-m-d');
+
+        $this->correctAttributes['period'] = 'daily';
+        $this->tour->end_date = $futureDate;
+        $this->tour->save();
+
+        $data = [
+            'type' => $this->resourceType,
+            'attributes' => $this->correctAttributes,
+            'relationships' => $this->correctRelationships
+        ];
+
+        $response = $this
+            ->actingAs($this->adminUser)
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->withData($data)
+            ->includePaths(...array_keys($this->correctRelationships))
+            ->post(route('v1.schedules.store'));
+
+        $id = $response
+            ->assertCreatedWithServerId(
+                route('v1.schedules.index'),
+                $data
+            )->id();
+
+        // var_dump($this->tour->date);
+        // dd(getAllWeekdayDatesUntil($this->correctAttributes['day'], $this->tour->end_date));
+
+        $expectedEventsDates = getAllDatesUntil($this->tour->end_date);
+
+        foreach ($expectedEventsDates as $date) {
+            $this->assertDatabaseHas('events', [
+                'schedule_id' => $id,
+                'date_time' => "{$date} {$this->correctAttributes['time']}",
+            ]);
+        }
     }
 
     public function test_creating_a_weekly_schedule_creates_all_its_associated_events()
