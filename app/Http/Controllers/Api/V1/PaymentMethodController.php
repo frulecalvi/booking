@@ -35,8 +35,19 @@ class PaymentMethodController extends Controller
 
         if (count($booking->tickets) < $booking->bookingable->minimum_payment_quantity) {
             $error = Error::fromArray([
-                'status' => 422,
+                'status' => 400,
                 'detail' => "The referenced booking does not reach the minimum required quantity to make a payment.",
+            ]);
+
+            return ErrorResponse::make($error);
+        }
+
+//        dd($booking->bookingable->paymentMethods);
+
+        if (! $booking->bookingable->paymentMethods->contains($paymentMethod)) {
+            $error = Error::fromArray([
+                'status' => 400,
+                'detail' => "The payment method is unrelated to the booking's product.",
             ]);
 
             return ErrorResponse::make($error);

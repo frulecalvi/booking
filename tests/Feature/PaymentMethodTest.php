@@ -56,6 +56,9 @@ class PaymentMethodTest extends TestCase
             'end_date' => now()->addYears(1),
             'minimum_payment_quantity' => 1,
         ]);
+
+        $this->tour->paymentMethods()->attach($this->paymentMethods['mercadopagoTest']);
+
         $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'date' => now()->addDays(15)]);
         $this->event = $this->tour->events->first();
         // dd([$this->tour->events, $this->schedule]);
@@ -273,6 +276,78 @@ class PaymentMethodTest extends TestCase
         );
     }
 
+    public function test_calling_prepare_payment_method_is_not_allowed_if_booking_tickets_are_less_than_product_s_minimum_payment_quantity()
+    {
+//        $this->withoutExceptionHandling();
+
+        $this->tour->minimum_payment_quantity = 4;
+        $this->tour->save();
+        $this->booking->save();
+
+        $prices = Price::factory(3)
+            ->for($this->booking->bookingable, 'priceable')
+            ->create();
+
+        foreach ($prices as $price) {
+            $tickets = Ticket::factory(1)
+                ->for($this->booking)
+                ->for($price)
+                ->create();
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(
+                route(
+                    'v1.payment-methods.preparePayment',
+                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id]
+                )
+            );
+
+        $expectedError = [
+            "detail" => "The referenced booking does not reach the minimum required quantity to make a payment.",
+            'status' => '400',
+        ];
+
+        $response->assertError(400, $expectedError);
+    }
+
+    public function test_calling_prepare_payment_method_is_not_allowed_if_product_is_not_related_to_payment_method()
+    {
+//        $this->withoutExceptionHandling();
+        $this->tour->save();
+        $this->booking->save();
+
+        $prices = Price::factory(3)
+            ->for($this->booking->bookingable, 'priceable')
+            ->create();
+
+        foreach ($prices as $price) {
+            $tickets = Ticket::factory(1)
+                ->for($this->booking)
+                ->for($price)
+                ->create();
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(
+                route(
+                    'v1.payment-methods.preparePayment',
+                    [$this->paymentMethods['mercadopago2'], 'bookingId' => $this->booking->id]
+                )
+            );
+
+        $expectedError = [
+            "detail" => "The payment method is unrelated to the booking's product.",
+            'status' => '400',
+        ];
+
+        $response->assertError(400, $expectedError);
+    }
+
     public function test_calling_mercadopago_payment_method_prepare_payment_endpoint_returns_meta_with_preference_id()
     {
 //        $this->withoutExceptionHandling();
@@ -367,42 +442,5 @@ class PaymentMethodTest extends TestCase
             $this->assertEquals($ticket->quantity, $item['quantity']);
             $this->assertEquals($price->amount, $item['unit_price']);
         }
-    }
-
-    public function test_calling_prepare_payment_method_is_not_allowed_if_booking_tickets_are_less_than_product_s_minimum_payment_quantity()
-    {
-//        $this->withoutExceptionHandling();
-
-        $this->tour->minimum_payment_quantity = 4;
-        $this->tour->save();
-        $this->booking->save();
-
-        $prices = Price::factory(3)
-            ->for($this->booking->bookingable, 'priceable')
-            ->create();
-
-        foreach ($prices as $price) {
-            $tickets = Ticket::factory(1)
-                ->for($this->booking)
-                ->for($price)
-                ->create();
-        }
-
-        $response = $this
-            ->jsonApi()
-            ->expects($this->resourceType)
-            ->post(
-                route(
-                    'v1.payment-methods.preparePayment',
-                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id]
-                )
-            );
-
-        $expectedError = [
-            "detail" => "The referenced booking does not reach the minimum required quantity to make a payment.",
-            'status' => '422',
-        ];
-
-        $response->assertError(422, $expectedError);
     }
 }
