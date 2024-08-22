@@ -33,6 +33,15 @@ class PaymentMethodController extends Controller
 
 //        dd($booking->bookingable->minimum_payment_quantity, count($booking->tickets));
 
+        if (count($booking->tickets) === 0) {
+            $error = Error::fromArray([
+                'status' => 400,
+                'detail' => "The bookings has no related tickets.",
+            ]);
+
+            return ErrorResponse::make($error);
+        }
+
         if (count($booking->tickets) < $booking->bookingable->minimum_payment_quantity) {
             $error = Error::fromArray([
                 'status' => 400,

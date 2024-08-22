@@ -313,6 +313,30 @@ class PaymentMethodTest extends TestCase
         $response->assertError(400, $expectedError);
     }
 
+    public function test_calling_prepare_payment_method_fails_if_bookings_has_no_related_tickets()
+    {
+//        $this->withoutExceptionHandling();
+        $this->tour->save();
+        $this->booking->save();
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(
+                route(
+                    'v1.payment-methods.preparePayment',
+                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id]
+                )
+            );
+
+        $expectedError = [
+            "detail" => "The bookings has no related tickets.",
+            'status' => '400',
+        ];
+
+        $response->assertError(400, $expectedError);
+    }
+
     public function test_calling_prepare_payment_method_is_not_allowed_if_product_is_not_related_to_payment_method()
     {
 //        $this->withoutExceptionHandling();
