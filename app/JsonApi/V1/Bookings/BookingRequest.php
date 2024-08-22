@@ -25,6 +25,7 @@ class BookingRequest extends ResourceRequest
             'product' => ['required', JsonApiRule::toOne()],
 //            'contactName' => 'required|string|max:64',
             'contactEmail' => 'required|email|max:64',
+            'contactPhoneNumber' => 'required|string|max:64',
             'state' => ValidStateRule::make(BookingState::class)
         ];
     }

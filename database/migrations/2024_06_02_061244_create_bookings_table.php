@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('reference_code', 10)->unique();
 //            $table->string('contact_name', 64);
             $table->string('contact_email', 64);
+            $table->string('contact_phone_number', 64);
             $table->string('state');
             $table->timestamps();
             $table->softDeletes();

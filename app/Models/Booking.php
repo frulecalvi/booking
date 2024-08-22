@@ -19,7 +19,8 @@ class Booking extends Model
     protected $fillable = [
         'reference_code',
 //        'contact_name',
-        'contact_email'
+        'contact_email',
+        'contact_phone_number'
         // 'event_id'
     ];
 

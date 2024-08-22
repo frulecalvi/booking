@@ -36,6 +36,7 @@ class BookingSchema extends Schema
             Str::make('referenceCode'),
 //            Str::make('contactName'),
             Str::make('contactEmail'),
+            Str::make('contactPhoneNumber'),
             // DateTime::make('createdAt')->sortable()->readOnly(),
             // DateTime::make('updatedAt')->sortable()->readOnly(),
             // DateTime::make('deletedAt')->sortable()->readOnly(),

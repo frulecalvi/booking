@@ -44,7 +44,8 @@ class TourBookingTest extends TestCase
 
         $this->correctAttributes = [
 //            'contactName' => $this->booking->contact_name,
-            'contactEmail' => $this->booking->contact_email
+            'contactEmail' => $this->booking->contact_email,
+            'contactPhoneNumber' => $this->booking->contact_phone_number,
         ];
 
         $this->correctRelationships = [

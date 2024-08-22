@@ -58,6 +58,7 @@ class BookingTest extends TestCase
         $this->requiredFields = [
             'attributes' => [
 //                'contactName',
+                'contactPhoneNumber',
                 'contactEmail'
             ],
             'relationships' => [
@@ -106,7 +107,8 @@ class BookingTest extends TestCase
         
         $this->correctAttributes = [
 //            'contactName' => $this->booking->contact_name,
-            'contactEmail' => $this->booking->contact_email
+            'contactEmail' => $this->booking->contact_email,
+            'contactPhoneNumber' => $this->booking->contact_phone_number
         ];
 
         $this->correctRelationships = [
@@ -158,7 +160,7 @@ class BookingTest extends TestCase
 
     public function test_anonymous_user_can_create_a_booking_for_an_event()
     {
-        $this->withoutExceptionHandling();
+//        $this->withoutExceptionHandling();
 
         $data = [
             'type' => $this->resourceType,
