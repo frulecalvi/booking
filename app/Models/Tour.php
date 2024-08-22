@@ -31,6 +31,7 @@ class Tour extends Model
         'duration',
         'meeting_point',
         'capacity',
+        'minimum_payment_quantity',
         'end_date'
     ];
 

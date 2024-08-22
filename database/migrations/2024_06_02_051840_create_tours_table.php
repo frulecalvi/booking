@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('meeting_point', 128);
             $table->date('end_date');
             $table->integer('capacity');
+            $table->integer('minimum_payment_quantity');
             $table->string('state');
             $table->timestamps();
             $table->softDeletes();

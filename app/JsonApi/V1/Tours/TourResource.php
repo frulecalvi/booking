@@ -28,6 +28,7 @@ class TourResource extends JsonApiResource
             'duration' => $this->resource->duration,
             'meetingPoint' => $this->resource->meeting_point,
             'capacity' => $this->resource->capacity,
+            'minimum_payment_quantity' => $this->resource->minimum_payment_quantity,
             'endDate' => $this->resource->end_date,
             'state' => $this->resource->state,
 //            'createdAt' => $this->resource->created_at,

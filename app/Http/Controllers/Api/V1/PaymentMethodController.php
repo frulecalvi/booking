@@ -29,11 +29,21 @@ class PaymentMethodController extends Controller
     public function preparePayment(Request $request, MercadoPago $mercadoPago)
     {
         $paymentMethod = $request->route('payment_method');
+        $booking = Booking::findOrFail($request->query('bookingId'));
+
+//        dd($booking->bookingable->minimum_payment_quantity, count($booking->tickets));
+
+        if (count($booking->tickets) < $booking->bookingable->minimum_payment_quantity) {
+            $error = Error::fromArray([
+                'status' => 422,
+                'detail' => "The referenced booking does not reach the minimum required quantity to make a payment.",
+            ]);
+
+            return ErrorResponse::make($error);
+        }
 
         if ($paymentMethod->payment_method_type === 'mercadopago') {
             $mercadoPago->setConfig($paymentMethod->secrets['access_token']);
-
-            $booking = Booking::findOrFail($request->query('bookingId'));
 
             try {
                 $preferenceId = $mercadoPago->createPreference($paymentMethod, $booking);
@@ -49,7 +59,14 @@ class PaymentMethodController extends Controller
             $metaResponse = ['preferenceId' => $preferenceId];
         }
 
-        $metaResponse = $metaResponse ?? ['Payment method type not found'];
+        if (! isset($metaResponse)) {
+            $error = Error::fromArray([
+                'status' => 500,
+                'detail' => 'Payment method type not found',
+            ]);
+
+            return ErrorResponse::make($error);
+        }
 
         return MetaResponse::make($metaResponse);
     }

@@ -51,7 +51,11 @@ class PaymentMethodTest extends TestCase
         $this->adminUser = User::factory()->create();
         $this->adminUser->assignRole('Admin');
 
-        $this->tour = Tour::factory()->create(['state' => TourActive::$name, 'end_date' => now()->addYears(1)]);
+        $this->tour = Tour::factory()->create([
+            'state' => TourActive::$name,
+            'end_date' => now()->addYears(1),
+            'minimum_payment_quantity' => 1,
+        ]);
         $this->schedule = Schedule::factory()->for($this->tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'date' => now()->addDays(15)]);
         $this->event = $this->tour->events->first();
         // dd([$this->tour->events, $this->schedule]);
@@ -363,5 +367,42 @@ class PaymentMethodTest extends TestCase
             $this->assertEquals($ticket->quantity, $item['quantity']);
             $this->assertEquals($price->amount, $item['unit_price']);
         }
+    }
+
+    public function test_calling_prepare_payment_method_is_not_allowed_if_booking_tickets_are_less_than_product_s_minimum_payment_quantity()
+    {
+//        $this->withoutExceptionHandling();
+
+        $this->tour->minimum_payment_quantity = 4;
+        $this->tour->save();
+        $this->booking->save();
+
+        $prices = Price::factory(3)
+            ->for($this->booking->bookingable, 'priceable')
+            ->create();
+
+        foreach ($prices as $price) {
+            $tickets = Ticket::factory(1)
+                ->for($this->booking)
+                ->for($price)
+                ->create();
+        }
+
+        $response = $this
+            ->jsonApi()
+            ->expects($this->resourceType)
+            ->post(
+                route(
+                    'v1.payment-methods.preparePayment',
+                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id]
+                )
+            );
+
+        $expectedError = [
+            "detail" => "The referenced booking does not reach the minimum required quantity to make a payment.",
+            'status' => '422',
+        ];
+
+        $response->assertError(422, $expectedError);
     }
 }

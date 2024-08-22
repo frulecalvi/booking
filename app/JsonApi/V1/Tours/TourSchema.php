@@ -42,6 +42,7 @@ class TourSchema extends Schema
             Str::make('duration'),
             Str::make('meetingPoint'),
             Number::make('capacity'),
+            Number::make('minimum_payment_quantity'),
             Str::make('endDate'),
             Str::make('state'),
             DateTime::make('createdAt')->sortable()->readOnly(),
