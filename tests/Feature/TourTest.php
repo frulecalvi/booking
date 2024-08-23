@@ -65,6 +65,7 @@ class TourTest extends TestCase
             'capacity' => $this->tours[Active::$name][0]->capacity,
             'minimum_payment_quantity' => $this->tours[Active::$name][0]->minimum_payment_quantity,
             'bookings_impact_availability' => $this->tours[Active::$name][0]->bookings_impact_availability,
+            'book_without_payment' => $this->tours[Active::$name][0]->book_without_payment,
             'endDate' => $this->tours[Active::$name][0]->end_date,
             'state' => Inactive::$name
         ];

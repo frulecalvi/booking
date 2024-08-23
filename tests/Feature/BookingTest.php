@@ -731,6 +731,4 @@ class BookingTest extends TestCase
 
         $response->assertExactMetaWithoutData($expectedMeta);
     }
-
-
 }

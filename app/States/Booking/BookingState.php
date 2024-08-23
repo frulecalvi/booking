@@ -10,6 +10,7 @@ use Spatie\ModelStates\State;
 #[
     DefaultState(Inactive::class),
     RegisterState(Active::class),
+    RegisterState(Expired::class),
 ]
 abstract class BookingState extends State
 {
