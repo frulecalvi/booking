@@ -63,13 +63,17 @@ class MercadoPago
 
 //        dd($items);
 
+//        $expirationDate = now()->addMinutes(2);
+
         try {
             $preference = $this->preferenceClient->create([
                 "items" => $items,
                 "metadata" => [
                     'bookingId' => $booking->id,
                     'paymentMethodId' => $paymentMethod->id,
-                ]
+                ],
+//                'expiration_date_to' => $expirationDate,
+//                'expires' => true,
             ]);
         } catch (MPApiException $e) {
 //            dd($e->getApiResponse(), $totalPrice);
