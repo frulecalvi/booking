@@ -76,7 +76,9 @@ class PaymentMethodController extends Controller
                 return ErrorResponse::make($error);
             }
 
-            $metaResponse = ['preferenceId' => $preferenceId];
+            $preferenceData = $mercadoPago->getPreference($preferenceId)->getContent();
+
+            $metaResponse = ['preferenceId' => $preferenceId, 'data' => $preferenceData ];
         }
 
         if (! isset($metaResponse)) {
