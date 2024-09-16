@@ -395,7 +395,7 @@ class PaymentMethodTest extends TestCase
             ->post(
                 route(
                     'v1.payment-methods.preparePayment',
-                    [$this->paymentMethods['mercadopagoTest'], 'bookingId' => $this->booking->id]
+                    [$this->paymentMethods['mercadopagoTest']->id, 'bookingId' => $this->booking->id]
                 )
             );
 
