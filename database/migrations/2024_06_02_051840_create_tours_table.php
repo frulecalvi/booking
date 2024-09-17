@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('minimum_payment_quantity');
             $table->boolean('bookings_impact_availability');
             $table->boolean('book_without_payment');
+            $table->string('image')->nullable();
             $table->string('state');
             $table->timestamps();
             $table->softDeletes();

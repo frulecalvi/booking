@@ -14,6 +14,8 @@ use DateInterval;
 use DateTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Illuminate\Support\Str;
 
@@ -451,4 +453,24 @@ class TourTest extends TestCase
     // {
         
     // }
+
+    public function test_tour_images_can_be_uploaded() {
+        $this->withoutExceptionHandling();
+
+        $tour = Tour::factory()->create(['state' => Active::$name]);
+
+        $image = UploadedFile::fake()->image('tour-image.jpg');
+
+        $response = $this
+            ->post(
+                route('v1.tours.uploadImage', $tour->id),
+                ['image' => $image]
+            );
+
+//        dd($response->json()['data']['attributes']['image']);
+        $uploadedImageName = $response->json()['data']['attributes']['image'];
+
+        if (Storage::disk('public')->assertExists("tour_images/{$uploadedImageName}"))
+            Storage::disk('public')->delete("tour_images/{$uploadedImageName}");
+    }
 }

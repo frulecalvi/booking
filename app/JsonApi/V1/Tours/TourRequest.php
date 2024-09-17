@@ -29,6 +29,7 @@ class TourRequest extends ResourceRequest
             'bookings_impact_availability' => 'required|boolean',
             'book_without_payment' => 'required|boolean',
             'endDate' => 'required|date_format:Y-m-d',
+            'image' => 'prohibited',
             'state' => ValidStateRule::make(TourState::class)
         ];
     }

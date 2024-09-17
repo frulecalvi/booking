@@ -32,6 +32,7 @@ class TourResource extends JsonApiResource
             'bookings_impact_availability' => $this->resource->bookings_impact_availability,
             'book_without_payment' => $this->resource->book_without_payment,
             'endDate' => $this->resource->end_date,
+            'image' => $this->resource->image,
             'state' => $this->resource->state,
 //            'createdAt' => $this->resource->created_at,
 //            'updatedAt' => $this->resource->updated_at,

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\MercadoPagoController;
+use App\Http\Controllers\Api\V1\TourController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use LaravelJsonApi\Laravel\Facades\JsonApiRoute;
@@ -22,12 +23,18 @@ JsonApiRoute::server('v1')
             ->actions('-actions', function (ActionRegistrar $actions) {
                 $actions->withId()->post('calculate-total-price');
                 $actions->withId()->post('mp-create-preference');
-            });
-        $server->resource('tours', JsonApiController::class)->relationships(function (Relationships $relationships) {
-            $relationships->hasMany('prices');
-            $relationships->hasMany('schedules');
-            $relationships->hasMany('events');
-        });
+            }
+        );
+        $server->resource('tours', TourController::class)
+            ->actions('-actions', function (ActionRegistrar $actions) {
+                $actions->withId()->post('upload-image');
+            })
+            ->relationships(function (Relationships $relationships) {
+                $relationships->hasMany('prices');
+                $relationships->hasMany('schedules');
+                $relationships->hasMany('events');
+            }
+        );
         $server->resource('schedules', JsonApiController::class);
         $server->resource('events', JsonApiController::class)->only('index', 'show', 'store');
         $server->resource('prices', JsonApiController::class)->only('index', 'store', 'destroy');

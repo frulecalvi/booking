@@ -47,6 +47,7 @@ class TourSchema extends Schema
             Boolean::make('bookings_impact_availability'),
             Boolean::make('book_without_payment'),
             Str::make('endDate'),
+            Str::make('image'),
             Str::make('state'),
             DateTime::make('createdAt')->sortable()->readOnly(),
             DateTime::make('updatedAt')->sortable()->readOnly(),
