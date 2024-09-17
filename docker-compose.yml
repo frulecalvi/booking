@@ -23,6 +23,8 @@ services:
         image: $DOCKER_REPOSITORY_HOST/$DOCKER_REPOSITORY_USER/booking-webserver:$BUILD_VERSION
         container_name: booking_webserver
         restart: unless-stopped
+        volumes:
+            - storage:/var/www/html/storage
         tty: true
         ports:
             - 809:80
@@ -52,6 +54,8 @@ networks:
         driver: bridge
     
 volumes:
+    app:
+        driver: local
     storage:
         driver: local
     cache:

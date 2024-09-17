@@ -30,12 +30,9 @@ COPY --chown=www-data:www-data . /var/www/html/
 
 USER root
 
-# RUN chown www-data:www-data -R /var/www/html
-RUN chmod -R 777 /var/www/html/storage
-RUN chmod -R 777 /var/www/html/bootstrap/cache
-
 USER www-data
 
+#RUN php artisan storage:link
 RUN composer dump-autoload --optimize
 
 USER root
