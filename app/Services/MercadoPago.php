@@ -55,7 +55,7 @@ class MercadoPago
         foreach ($booking->tickets as $ticket) {
             $items[] = [
                 'id' => $ticket->id,
-                'title' => "{$booking->bookingable->name} - {$ticket->price->name}",
+                'title' => "{$booking->bookingable->name} - {$ticket->price->title}",
                 'quantity' => $ticket->quantity,
                 'unit_price' => floatval($ticket->price->amount),
             ];
