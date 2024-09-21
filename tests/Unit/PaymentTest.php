@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Jobs\FindExpiredBookings;
+use App\Jobs\UpdateBookingData;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Payment;
@@ -13,13 +14,13 @@ use App\Models\Tour;
 use App\Services\BookingService;
 use App\States\Booking\Paid as BookingPaid;
 use App\States\Booking\Pending as BookingPending;
-use App\States\Booking\Pending as BookingActive;
 use App\States\Booking\Expired as BookingExpired;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Console\Scheduling\Schedule as LaravelSchedule;
 use Illuminate\Console\Scheduling\Event as LaravelEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase

@@ -10,7 +10,7 @@ use App\Models\Schedule;
 use App\Models\Ticket;
 use App\Models\Tour;
 use App\Services\BookingService;
-use App\States\Booking\Pending as BookingActive;
+use App\States\Booking\Pending as BookingPending;
 use App\States\Booking\Expired as BookingExpired;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
