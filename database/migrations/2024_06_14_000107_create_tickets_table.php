@@ -16,6 +16,7 @@ return new class extends Migration
             // $table->ulidMorphs('ticketable');
             $table->foreignUlid('booking_id')->constrained();
             $table->foreignUlid('price_id')->constrained();
+            $table->decimal('price_amount', 10, 2)->nullable();
             $table->string('name');
             $table->string('person_id');
             $table->string('nationality')->nullable();

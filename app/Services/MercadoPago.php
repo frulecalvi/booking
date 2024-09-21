@@ -57,7 +57,7 @@ class MercadoPago
                 'id' => $ticket->id,
                 'title' => "{$booking->bookingable->name} - {$ticket->price->title}",
                 'quantity' => $ticket->quantity,
-                'unit_price' => floatval($ticket->price->amount),
+                'unit_price' => floatval($ticket->price_amount),
             ];
         }
 

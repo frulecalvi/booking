@@ -4,10 +4,14 @@ namespace Tests\Unit;
 
 use App\Jobs\FindExpiredBookings;
 use App\Models\Booking;
+use App\Models\Price;
 use App\Models\Schedule;
+use App\Models\Ticket;
 use App\Models\Tour;
-use App\States\Booking\Active as BookingActive;
+use App\Services\BookingService;
+use App\States\Booking\Pending as BookingActive;
 use App\States\Booking\Expired as BookingExpired;
+use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Console\Scheduling\Schedule as LaravelSchedule;
 use Illuminate\Console\Scheduling\Event as LaravelEvent;
@@ -70,6 +74,60 @@ class BookingTest extends TestCase
                     'period' => 'weekly',
                 ]),
         ];
+    }
+
+    public function test_when_booking_tickets_are_created_updated_or_deleted_the_total_price_is_updated()
+    {
+        $schedule = Schedule::factory()
+            ->for($this->tours[0], 'scheduleable')
+            ->create(['state' => ScheduleActive::$name, 'date' => now()->addDays(15)]);
+        $event = $this->tours[0]->events->first();
+
+        $booking = Booking::factory()
+            ->for($this->tours[0], 'bookingable')
+            ->for($event)
+            ->make();
+
+        $this->assertEquals(0, $booking->total_price);
+
+        $booking->save();
+
+        $prices = Price::factory(3)
+            ->for($booking->bookingable, 'priceable')
+            ->create();
+
+        $tickets = [];
+
+        foreach ($prices as $price) {
+            $tickets[] = Ticket::factory(1)
+                ->for($booking)
+                ->for($price)
+                ->create();
+        }
+
+        $booking->refresh();
+
+        $bookingService = new BookingService();
+
+        $totalPrice = $bookingService->calculateTotalPrice($booking);
+        $this->assertEquals($totalPrice, $booking->total_price);
+
+        $tickets[0][0]->delete();
+        $booking->refresh();
+
+        $this->assertNotEquals($totalPrice, $booking->total_price);
+        $totalPrice = $bookingService->calculateTotalPrice($booking);
+        $this->assertEquals($totalPrice, $booking->total_price);
+
+        $tickets[1][0]->quantity = $tickets[1][0]->quantity + 1;
+        $tickets[1][0]->save();
+//        var_dump($booking->tickets);
+        $booking->refresh();
+//        var_dump($booking->tickets);
+
+        $this->assertNotEquals($totalPrice, $booking->total_price);
+        $totalPrice = $bookingService->calculateTotalPrice($booking);
+        $this->assertEquals($totalPrice, $booking->total_price);
     }
 
     public function test_bookings_older_than_15_minutes_are_marked_as_expired_by_job_if_product_demands_payment()

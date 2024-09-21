@@ -33,4 +33,8 @@ class Ticket extends Model
     {
         return $this->belongsTo(Price::class);
     }
+
+    public function getPriceAmountAttribute($value) {
+        return formatPriceAsString($value);
+    }
 }

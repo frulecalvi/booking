@@ -10,7 +10,7 @@ use App\Models\Ticket;
 use App\Models\Tour;
 use App\Models\User;
 use App\Services\MercadoPago;
-use App\States\Booking\Inactive;
+use App\States\Booking\Pending;
 use App\States\Schedule\Active as ScheduleActive;
 use App\States\Tour\Active as TourActive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -78,7 +78,8 @@ class BookingTest extends TestCase
             'bookingableType' => 'algo',
             'bookingableId' => 'algo',
             'bookingableDescription' => 'algo',
-            'status' => 'algo'
+            'status' => 'algo',
+            'totalPrice' => 'algo',
         ];
 
         $this->tour = Tour::factory()->create(['state' => TourActive::$name, 'end_date' => now()->addYears(1)]);
@@ -639,7 +640,7 @@ class BookingTest extends TestCase
             'type' => $this->resourceType,
             'id' => $this->booking->getRouteKey(),
             'attributes' => [
-                'state' => Inactive::$name
+                'state' => Pending::$name
             ]
         ];
 
@@ -661,7 +662,7 @@ class BookingTest extends TestCase
             'type' => $this->resourceType,
             'id' => $this->booking->getRouteKey(),
             'attributes' => [
-                'state' => Inactive::$name
+                'state' => Pending::$name
             ]
         ];
 
@@ -683,7 +684,7 @@ class BookingTest extends TestCase
             'type' => $this->resourceType,
             'id' => $this->booking->getRouteKey(),
             'attributes' => [
-                'state' => Inactive::$name
+                'state' => Pending::$name
             ]
         ];
 
@@ -715,7 +716,7 @@ class BookingTest extends TestCase
 
         $totalPrice = 0;
         foreach ($this->booking->tickets as $ticket) {
-            $totalPrice += $ticket->price->amount * $ticket->quantity;
+            $totalPrice += $ticket->price_amount * $ticket->quantity;
         }
 
 //        dd($this->booking->tickets, $totalPrice);

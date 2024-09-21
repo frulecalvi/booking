@@ -432,10 +432,12 @@ class PaymentMethodTest extends TestCase
                 ->create();
         }
 
-        $totalPrice = 0;
-        foreach ($this->booking->tickets as $ticket) {
-            $totalPrice += $ticket->price->amount * $ticket->quantity;
-        }
+//        $totalPrice = 0;
+//        foreach ($this->booking->tickets as $ticket) {
+//            $totalPrice += $ticket->price->amount * $ticket->quantity;
+//        }
+
+//        $totalPrice = $this->booking->total_price;
 
         $response = $this
             ->jsonApi()
@@ -460,11 +462,10 @@ class PaymentMethodTest extends TestCase
 
         foreach ($preference['items'] as $item) {
             $ticket = Ticket::find($item['id']);
-            $price = $ticket->price;
-//            dd($price);
+//            $price = $ticket->price;
 
             $this->assertEquals($ticket->quantity, $item['quantity']);
-            $this->assertEquals($price->amount, $item['unit_price']);
+            $this->assertEquals($ticket->price_amount, $item['unit_price']);
         }
     }
 }

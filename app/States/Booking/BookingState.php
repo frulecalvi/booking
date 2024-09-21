@@ -8,8 +8,8 @@ use Spatie\ModelStates\Attributes\RegisterState;
 use Spatie\ModelStates\State;
 
 #[
-    DefaultState(Inactive::class),
-    RegisterState(Active::class),
+    DefaultState(Pending::class),
+    RegisterState(Paid::class),
     RegisterState(Expired::class),
 ]
 abstract class BookingState extends State

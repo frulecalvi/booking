@@ -57,15 +57,6 @@ class MercadoPagoTest extends TestCase
                     'webhook_secret' => 'some_fake_webhook_secret',
                 ]
             ]);
-
-        $this->correctRelationships = [
-            'booking' => [
-                'data' => [
-                    'type' => 'bookings',
-                    'id' => $this->booking->id,
-                ],
-            ],
-        ];
     }
 
 //    public function test_mercadopago_create_preference_returns_meta_data_with_preference_id()

@@ -3,9 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Schedule;
+use App\Models\Ticket;
 use App\Observers\BookingObserver;
+use App\Observers\PaymentObserver;
 use App\Observers\ScheduleObserver;
+use App\Observers\TicketObserver;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Events\DatabaseRefreshed;
 use Illuminate\Support\Facades\Artisan;
@@ -31,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Booking::observe(BookingObserver::class);
         Schedule::observe(ScheduleObserver::class);
+        Ticket::observe(TicketObserver::class);
+        Payment::observe(PaymentObserver::class);
 
         Event::listen(DatabaseRefreshed::class, function () {
             Artisan::call('db:seed', ['--class' => RolesAndPermissionsSeeder::class]);

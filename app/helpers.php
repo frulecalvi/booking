@@ -63,7 +63,8 @@ if (! function_exists('roundPrice')) {
 }
 
 if (! function_exists('formatPriceAsString')) {
-    function formatPriceAsString(float $amount): string {
+    function formatPriceAsString(?float $amount): string {
+        $amount = $amount ?? 0;
         return strval(number_format($amount, 2, '.', ''));
     }
 }

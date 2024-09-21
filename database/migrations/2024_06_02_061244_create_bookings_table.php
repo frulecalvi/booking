@@ -19,6 +19,7 @@ return new class extends Migration
             $table->dateTime('event_date_time');
             $table->string('bookingable_description', 256);
             $table->string('reference_code', 10)->unique();
+            $table->decimal('total_price', 10, 2)->nullable();
 //            $table->string('contact_name', 64);
             $table->string('contact_email', 64);
             $table->string('contact_phone_number', 64);

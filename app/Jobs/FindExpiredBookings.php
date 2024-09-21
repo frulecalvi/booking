@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Booking;
 use App\Models\Tour;
-use App\States\Booking\Active;
+use App\States\Booking\Pending;
 use App\States\Booking\Expired;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,7 +30,7 @@ class FindExpiredBookings implements ShouldQueue
     public function handle(): void
     {
         $bookings = Booking::where([
-            ['state', '=', Active::$name],
+            ['state', '=', Pending::$name],
             ['created_at', '<=', now()->subMinutes(15)],
         ])->whereHasMorph(
             'bookingable',
