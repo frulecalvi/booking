@@ -45,9 +45,9 @@ services:
             MARIADB_PASSWORD: $DB_PASSWORD
             MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
         volumes:
-            - booking_db-data_${APP_ENV}:/var/lib/mysql
+            - booking_db-data:/var/lib/mysql
         networks:
-            - booking_network_${APP_ENV}
+            - booking_network
 
 networks:
     booking_network:
