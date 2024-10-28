@@ -2,5 +2,5 @@ services:
     app:
         volumes:
             - ./:/var/www/html
-            - storage:/var/www/html/storage
-            - cache:/var/www/html/bootstrap/cache
+            - booking_storage:/var/www/html/storage
+            - booking_cache:/var/www/html/bootstrap/cache
