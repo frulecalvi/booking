@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\PaymentMethod;
 use App\Models\Price;
 use App\Models\Schedule;
+use App\Models\Ticket;
 use App\Models\Tour;
 use App\Models\TourCategory;
 use App\Models\User;
@@ -77,12 +78,19 @@ class DatabaseSeeder extends Seeder
                 Price::factory(3)->for($tour, 'priceable')->create();
                 Schedule::factory(2)->for($tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'period' => 'weekly']);
 
+                $lastPrice = $tour->prices->last();
+
                 if ($lastEvent = $tour->events->last()) {
                     $lastEventSchedule = Schedule::findOrFail($lastEvent->schedule_id);
-                    Booking::factory()
+                    $booking = Booking::factory()
                         ->for($lastEvent)
                         ->for($lastEventSchedule)
                         ->for($tour, 'bookingable')
+                        ->create();
+
+                    Ticket::factory(3)
+                        ->for($booking)
+                        ->for($lastPrice)
                         ->create();
                 }
             }
