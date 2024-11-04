@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignUlid('schedule_id')->nullable();
             $table->foreignUlid('event_id');
             $table->dateTime('event_date_time');
-            $table->string('bookingable_description', 256);
+            $table->string('bookingable_description', 2048);
             $table->string('reference_code', 10)->unique();
             $table->decimal('total_price', 10, 2)->nullable();
 //            $table->string('contact_name', 64);
