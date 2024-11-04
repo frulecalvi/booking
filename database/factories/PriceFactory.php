@@ -19,7 +19,7 @@ class PriceFactory extends Factory
         return [
             'title' => $this->faker->words(3, true),
             'description' => $this->faker->sentence(),
-            'amount' => strval($this->faker->randomFloat(2, 0, 4000000.00)),
+            'amount' => strval($this->faker->randomFloat(2, 0, 50000.00)),
             'currency' => $this->faker->currencyCode(),
             'capacity' => $this->faker->numberBetween(0, 50),
         ];
