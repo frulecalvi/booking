@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Booking;
 use App\Models\PaymentMethod;
 use App\Models\Price;
 use App\Models\Schedule;
@@ -75,6 +76,15 @@ class DatabaseSeeder extends Seeder
                 $tour->paymentMethods()->saveMany($createdPaymentMethods);
                 Price::factory(3)->for($tour, 'priceable')->create();
                 Schedule::factory(2)->for($tour, 'scheduleable')->create(['state' => ScheduleActive::$name, 'period' => 'weekly']);
+
+                if ($lastEvent = $tour->events->last()) {
+                    $lastEventSchedule = Schedule::findOrFail($lastEvent->schedule_id);
+                    Booking::factory()
+                        ->for($lastEvent)
+                        ->for($lastEventSchedule)
+                        ->for($tour, 'bookingable')
+                        ->create();
+                }
             }
         }
 
