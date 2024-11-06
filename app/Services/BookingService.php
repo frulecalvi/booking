@@ -14,7 +14,7 @@ class BookingService
     {
         $totalPrice = 0;
 
-        foreach ($booking->tickets as $ticket){
+        foreach ($booking->tickets as $ticket) {
             $totalPrice += $ticket->price_amount * $ticket->quantity;
         }
 
