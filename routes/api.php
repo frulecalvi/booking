@@ -12,9 +12,9 @@ use LaravelJsonApi\Laravel\Routing\Relationships;
 use LaravelJsonApi\Laravel\Routing\ResourceRegistrar;
 use LaravelJsonApi\Laravel\Routing\ActionRegistrar;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+ Route::get('/user', function (Request $request) {
+     return $request->user();
+ })->middleware('auth:sanctum');
 
 JsonApiRoute::server('v1')
     ->prefix('v1')
