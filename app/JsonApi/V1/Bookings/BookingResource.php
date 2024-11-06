@@ -4,6 +4,7 @@ namespace App\JsonApi\V1\Bookings;
 
 use App\Models\Booking;
 use App\Models\Tour;
+use App\Models\TourCategory;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use LaravelJsonApi\Core\Resources\JsonApiResource;
@@ -54,7 +55,10 @@ class BookingResource extends JsonApiResource
         $bookingService = new BookingService();
         $meta = ['totalPrice' => $bookingService->calculateTotalPrice($this->resource)];
 
-        if ($this->resource->bookingable instanceof Tour) {
+        if (
+            $this->resource->bookingable instanceof Tour
+            && $this->resource->bookingable->tourCategory instanceof TourCategory
+        ) {
             $meta['tourCategory'] = [
                 'id' => $this->resource->bookingable->tourCategory->id,
                 'name' => $this->resource->bookingable->tourCategory->name,
