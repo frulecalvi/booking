@@ -5,6 +5,7 @@ namespace App\JsonApi\V1\Bookings;
 use App\Models\Booking;
 use LaravelJsonApi\Eloquent\Contracts\Paginator;
 use LaravelJsonApi\Eloquent\Fields\DateTime;
+use LaravelJsonApi\Eloquent\Fields\Relations\HasMany;
 use LaravelJsonApi\Eloquent\Fields\Str;
 use LaravelJsonApi\Eloquent\Fields\ID;
 use LaravelJsonApi\Eloquent\Fields\Relations\BelongsTo;
@@ -43,6 +44,7 @@ class BookingSchema extends Schema
             BelongsTo::make('event'),
             BelongsTo::make('schedule'),
             MorphTo::make('product', 'bookingable')->types('tours', 'shows'),
+            HasMany::make('tickets'),
             Str::make('state'),
         ];
     }

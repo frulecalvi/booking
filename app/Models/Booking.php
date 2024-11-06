@@ -53,7 +53,8 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function getTotalPriceAttribute($value) {
+    public function getTotalPriceAttribute($value): string
+    {
         return formatPriceAsString($value);
     }
 }
